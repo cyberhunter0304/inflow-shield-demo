@@ -1,0 +1,35 @@
+# FastAPI Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# HTTP Client
+httpx==0.28.1
+requests==2.31.0
+
+# MongoDB
+pymongo==4.6.1
+
+# Data Validation
+pydantic==2.10.6
+pydantic-settings==2.7.1
+
+# Security & Jailbreak Detection
+llm-guard==0.3.16
+
+# Pin huggingface_hub for transformers/accelerate compatibility
+huggingface-hub==0.31.0
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# Logging
+python-json-logger==3.2.1
+
+# Type Hints
+typing-extensions==4.12.2
+
+# Optional: Performance
+orjson==3.10.14
+
+# Note: llm-guard and its heavy deps (torch, spacy, transformers, presidio)
+# are installed as separate Dockerfile layers — do NOT add them here.

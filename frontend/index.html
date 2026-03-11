@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iNextLabs AI Assistant</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+    }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: linear-gradient(135deg, #fffbf5 0%, #fff4e6 100%);
+    }
+    /* Header */
+    .app-header {
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .app-logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      overflow: hidden; box-shadow: 0 2px 8px rgba(255,107,53,0.2);
+    }
+    .app-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .app-title { font-size: 19px; font-weight: 700; color: #1f2937; letter-spacing: -0.3px; }
+    .app-subtitle { font-size: 12px; color: #6b7280; font-weight: 500; }
+    .header-right { display: flex; align-items: center; gap: 12px; position: relative; }
+    .nav-toggle-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white; text-decoration: none; border: none; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(249,115,22,0.35); transition: all 0.2s;
+    }
+    .nav-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(249,115,22,0.5); }
+    .status-indicator {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .status-indicator.connected { background: #d1fae5; color: #065f46; }
+    .status-indicator.checking  { background: #fef3c7; color: #92400e; }
+    .status-indicator.error     { background: #fee2e2; color: #991b1b; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-dot.connected { background: #10b981; }
+    .status-dot.checking  { background: #f59e0b; }
+    .status-dot.error     { background: #ef4444; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .menu-button {
+      background: none; border: none; font-size: 24px; cursor: pointer;
+      padding: 8px; border-radius: 8px; transition: background 0.2s; color: #6b7280;
+    }
+    .menu-button:hover { background: #f3f4f6; }
+    .dropdown-menu {
+      position: absolute; top: 100%; right: 0; margin-top: 8px;
+      background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      min-width: 200px; z-index: 100; overflow: hidden;
+      border: 1px solid #f3f4f6;
+    }
+    .menu-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; cursor: pointer; transition: background 0.15s;
+      font-size: 14px; font-weight: 500; color: #374151;
+    }
+    .menu-item:hover { background: #fff7ed; color: #FF6B35; }
+    .menu-item-icon { font-size: 18px; }
+    
+    /* Animation Variables */
+    :root {
+      --transition-fast: 150ms;
+      --transition-normal: 250ms;
+      --transition-slow: 400ms;
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    /* Chat Area */
+    .chat-area {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: flex; flex-direction: column;
+      scroll-behavior: smooth;
+    }
+    .chat-area::-webkit-scrollbar { width: 8px; }
+    .chat-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .chat-area::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.4); border-radius: 4px; }
+    .chat-area::-webkit-scrollbar-thumb:hover { background: rgba(249,115,22,0.6); }
+    .messages-wrapper { max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
+    
+    /* Message Animations */
+    @keyframes message-slide-in-left {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes message-slide-in-right {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message { animation: message-slide-in-left var(--transition-normal) var(--ease-out); }
+    .message.user { animation: message-slide-in-right var(--transition-normal) var(--ease-out); }
+    .message-bubble { transition: transform var(--transition-fast) var(--ease-out), box-shadow var(--transition-fast) var(--ease-out); }
+    .message:hover .message-bubble { transform: scale(1.01); }
+    .message:hover .message-bubble.ai { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .message:hover .message-bubble.user { box-shadow: 0 4px 16px rgba(249,115,22,0.25); }
+    
+    /* Copy Button */
+    .message-content-wrapper { position: relative; }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px;
+      opacity: 0; background: rgba(255,255,255,0.95);
+      border: 1px solid #e5e7eb; border-radius: 6px;
+      padding: 4px 8px; font-size: 11px; cursor: pointer;
+      transition: all var(--transition-fast) var(--ease-out);
+      color: #6b7280; font-weight: 500;
+    }
+    .copy-btn:hover { background: #f97316; color: white; border-color: #f97316; }
+    .copy-btn.copied { background: #10b981; color: white; border-color: #10b981; }
+    .message-content-wrapper:hover .copy-btn { opacity: 1; }
+    .message.user .copy-btn { background: rgba(0,0,0,0.2); border-color: transparent; color: white; }
+    .message.user .copy-btn:hover { background: rgba(0,0,0,0.4); }
+    /* Welcome Screen */
+    .welcome-screen { text-align: center; padding: 60px 20px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .welcome-logo {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: transparent; margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .welcome-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .welcome-title { font-size: 32px; font-weight: 700; color: #1f2937; margin-bottom: 12px; }
+    .welcome-subtitle { font-size: 17px; color: #78716c; margin-bottom: 40px; max-width: 500px; line-height: 1.6; }
+    .suggested-prompts { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; max-width: 600px; width: 100%; }
+    .prompt-card {
+      background: white; backdrop-filter: blur(10px);
+      border: 1px solid #fed7aa; border-radius: 12px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .prompt-card:hover { background: #fff7ed; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.15); }
+    .prompt-icon { font-size: 20px; margin-bottom: 8px; }
+    .prompt-text { font-size: 14px; color: #1f2937; font-weight: 500; line-height: 1.4; }
+    /* Messages */
+    .message { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-end; }
+    .message.user { flex-direction: row-reverse; }
+    .message-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .message-avatar.user { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; }
+    .message-avatar.ai   { background: white; border: 1px solid #fed7aa; }
+    .message-avatar.system { background: rgba(255,200,0,0.3); }
+    .message-content-wrapper { max-width: 70%; }
+    .message-bubble {
+      padding: 14px 18px; border-radius: 18px; font-size: 15px; line-height: 1.6;
+    }
+    .message-bubble.user   { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border-radius: 18px 18px 4px 18px; }
+    .message-bubble.ai     { background: white; color: #1f2937; border: 1px solid #fed7aa; border-radius: 18px 18px 18px 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .message-bubble.system { background: rgba(255,200,0,0.15); color: #92400e; border: 1px solid rgba(255,200,0,0.4); border-radius: 18px; }
+    .message-time { font-size: 11px; color: #78716c; margin-top: 4px; }
+    .message.user .message-time { text-align: right; color: rgba(255,255,255,0.7); }
+    /* Security Badge Animation */
+    .security-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%; font-size: 12px;
+      margin-left: 8px; transition: all 0.3s ease;
+    }
+    .security-badge.pending {
+      background: rgba(255,193,7,0.2); color: #ffc107;
+      animation: pulse-badge 1.5s ease-in-out infinite;
+    }
+    .security-badge.scanning {
+      background: rgba(33,150,243,0.2); color: #2196f3;
+      animation: spin-badge 1s linear infinite;
+    }
+    .security-badge.safe {
+      background: rgba(76,175,80,0.2); color: #4caf50;
+      animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .security-badge.alert {
+      background: rgba(244,67,54,0.2); color: #f44336;
+      animation: shake-badge 0.5s ease-in-out;
+    }
+    .security-badge.pii {
+      background: rgba(255,152,0,0.2); color: #ff9800;
+      animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pulse-badge {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    @keyframes spin-badge {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pop-in {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes shake-badge {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-3px); }
+      40%, 80% { transform: translateX(3px); }
+    }
+    .security-tooltip {
+      position: relative; cursor: help;
+    }
+    .security-tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: white; padding: 6px 10px;
+      border-radius: 6px; font-size: 11px; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      z-index: 100;
+    }
+    .security-tooltip:hover::after { opacity: 1; }
+    /* Typing Indicator */
+    .typing-indicator {
+      display: flex; gap: 12px; align-items: flex-end; margin-bottom: 16px;
+      opacity: 0; transform: translateY(10px);
+      transition: opacity var(--transition-normal) var(--ease-out), transform var(--transition-normal) var(--ease-out);
+    }
+    .typing-indicator.visible { opacity: 1; transform: translateY(0); }
+    .typing-bubble {
+      background: white; border: 1px solid #fed7aa;
+      border-radius: 18px 18px 18px 4px;
+      padding: 14px 20px; display: flex; gap: 6px; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .typing-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #f97316;
+      animation: typing 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+    /* Input Area */
+    .input-container {
+      padding: 16px 24px 20px;
+      background: white; border-top: 1px solid #fed7aa;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+    .input-wrapper { max-width: 900px; margin: 0 auto; display: flex; gap: 12px; align-items: flex-end; }
+    .input-box {
+      flex: 1; padding: 14px 18px; border-radius: 26px; border: 2px solid #fed7aa;
+      background: #fffbf5; font-size: 15px; color: #1f2937;
+      resize: none; font-family: inherit; outline: none; transition: all 0.2s;
+      max-height: 120px; line-height: 1.5;
+    }
+    .input-box:focus { background: white; border-color: #f97316; box-shadow: 0 0 0 4px rgba(249,115,22,0.1); }
+    .input-box::placeholder { color: #9ca3af; }
+    .input-box:disabled { opacity: 0.6; cursor: not-allowed; }
+    .send-button {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      border: none; color: white; font-size: 22px; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(249,115,22,0.4); flex-shrink: 0;
+    }
+    .send-button:hover:not(:disabled) { transform: scale(1.08); box-shadow: 0 6px 20px rgba(249,115,22,0.5); }
+    .send-button:active:not(:disabled) { transform: scale(0.95); }
+    .send-button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .powered-by { text-align: center; font-size: 11px; color: #78716c; margin-top: 10px; font-weight: 500; }
+    .powered-by a { color: #f97316; font-weight: 600; text-decoration: none; }
+    .powered-by a:hover { text-decoration: underline; }
+    /* Flow Toggle */
+    .flow-toggle-bar {
+      max-width: 900px; margin: 0 auto 10px; display: flex; align-items: center; gap: 10px;
+    }
+    .flow-toggle-label { font-size: 12px; color: #78716c; font-weight: 600; white-space: nowrap; }
+    .flow-toggle-track {
+      position: relative; width: 200px; height: 32px; border-radius: 16px;
+      background: white; border: 1px solid #fed7aa;
+      cursor: pointer; display: flex; align-items: center; flex-shrink: 0;
+    }
+    .flow-toggle-thumb {
+      position: absolute; top: 3px; left: 3px; height: 24px; width: 95px;
+      border-radius: 12px; background: linear-gradient(135deg,#f97316,#ea580c);
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 2px 8px rgba(249,115,22,0.4);
+    }
+    .flow-toggle-track.via-mongo .flow-toggle-thumb { transform: translateX(99px); }
+    .flow-toggle-options { display: flex; width: 100%; z-index: 1; }
+    .flow-toggle-option {
+      flex: 1; text-align: center; font-size: 11px; font-weight: 700;
+      color: #78716c; line-height: 32px; transition: color 0.2s; user-select: none;
+    }
+    .flow-toggle-track.via-mongo .flow-toggle-option:last-child,
+    .flow-toggle-track:not(.via-mongo) .flow-toggle-option:first-child { color: white; }
+    .flow-mode-hint {
+      font-size: 11px; color: #78716c; font-style: italic;
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .welcome-title { font-size: 26px; }
+      .suggested-prompts { grid-template-columns: 1fr; }
+      .message-content-wrapper { max-width: 85%; }
+      .app-subtitle { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-left">
+      <div class="app-logo">
+        <img src="/static/loco.png" alt="iNextLabs" />
+      </div>
+      <div>
+        <div class="app-title">iNextLabs AI Assistant</div>
+        <div class="app-subtitle">Powered by Advanced AI Security</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator checking" id="statusBadge">
+        <div class="status-dot checking" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <a href="/dashboard" class="nav-toggle-btn">📊 Dashboard</a>
+      <button class="menu-button" onclick="toggleMenu()">⋮</button>
+      <div class="dropdown-menu" id="dropdownMenu" style="display:none">
+        <div class="menu-item" onclick="clearChat()"><span class="menu-item-icon">🗑️</span><span>Clear Chat</span></div>
+        <div class="menu-item" onclick="resetSession()"><span class="menu-item-icon">🔄</span><span>New Session</span></div>
+        <div class="menu-item" onclick="window.open('https://inextlabs.com','_blank')"><span class="menu-item-icon">🌐</span><span>Visit iNextLabs</span></div>
+        <div class="menu-item" onclick="showSessionInfo()"><span class="menu-item-icon">ℹ️</span><span>Session Info</span></div>
+        <div class="menu-item" onclick="window.location.href='/dashboard'"><span class="menu-item-icon">📊</span><span>View Analytics</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <div class="messages-wrapper" id="messagesWrapper">
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-logo">
+          <img src="/static/loco.png" alt="iNextLabs" />
+        </div>
+        <h1 class="welcome-title">Welcome to iNextLabs AI Assistant</h1>
+        <p class="welcome-subtitle">Your intelligent assistant with enterprise-grade AI security. Ask me anything!</p>
+        <div class="suggested-prompts">
+          <div class="prompt-card" onclick="setInput('What can you help me with?')">
+            <div class="prompt-icon">💡</div><p class="prompt-text">What can you help me with?</p>
+          </div>
+          <div class="prompt-card" onclick="setInput('Tell me about AI solutions')">
+            <div class="prompt-icon">🤖</div><p class="prompt-text">Tell me about AI solutions</p>
+          </div>
+          <div class="prompt-card" onclick="setInput('How does this work?')">
+            <div class="prompt-icon">⚙️</div><p class="prompt-text">How does this work?</p>
+          </div>
+          <div class="prompt-card" onclick="setInput('What services do you offer?')">
+            <div class="prompt-icon">🌟</div><p class="prompt-text">What services do you offer?</p>
+          </div>
+        </div>
+      </div>
+      <div id="messagesList"></div>
+      <div id="typingIndicator" style="display:none" class="typing-indicator">
+        <div class="message-avatar ai" style="overflow:hidden">
+          <img src="/static/loco.png" alt="AI" style="width:100%;height:100%;object-fit:contain" />
+        </div>
+        <div class="typing-bubble">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+      <div id="messagesEnd"></div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-container">
+    <!-- Flow Toggle -->
+    <div class="flow-toggle-bar">
+      <span class="flow-toggle-label">Mode:</span>
+      <div class="flow-toggle-track" id="flowToggle" onclick="toggleFlow()">
+        <div class="flow-toggle-thumb"></div>
+        <div class="flow-toggle-options">
+          <span class="flow-toggle-option">⚡ Direct</span>
+          <span class="flow-toggle-option">🔄 Via MongoDB</span>
+        </div>
+      </div>
+      <span class="flow-mode-hint" id="flowHint">Scan → LLM in one request</span>
+    </div>
+    <div class="input-wrapper">
+      <textarea
+        class="input-box" id="inputBox"
+        placeholder="Type your message..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-button" id="sendButton" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="powered-by">
+      Powered by <a href="https://inextlabs.com" target="_blank">iNextLabs</a>
+      · Secured with AI Guardrails
+      · Session: <span id="sessionIdDisplay">...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── State ────────────────────────────────────────────────
+  const BACKEND_URL = window.location.origin;
+  let connectionStatus = 'checking';
+  let loading = false;
+  let messages = [];
+  let flowMode = 'direct'; // 'direct' | 'via-mongo'
+
+  // ─── Flow Toggle ──────────────────────────────────────────
+  function toggleFlow() {
+    flowMode = flowMode === 'direct' ? 'via-mongo' : 'direct';
+    const track = document.getElementById('flowToggle');
+    const hint  = document.getElementById('flowHint');
+    if (flowMode === 'via-mongo') {
+      track.classList.add('via-mongo');
+      hint.textContent = 'Store in MongoDB → monitor scans → result saved';
+    } else {
+      track.classList.remove('via-mongo');
+      hint.textContent = 'Scan → LLM in one request';
+    }
+  }
+
+  // ─── Bot ID ───────────────────────────────────────────────
+  function getBotId() {
+    let id = localStorage.getItem('bot_id');
+    if (!id) {
+      id = `bot_${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
+      localStorage.setItem('bot_id', id);
+    }
+    return id;
+  }
+  function getConvId() {
+    let id = localStorage.getItem('conv_id');
+    if (!id) {
+      id = `conv_${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
+      localStorage.setItem('conv_id', id);
+    }
+    return id;
+  }
+  let botId = getBotId();
+  let convId = getConvId();
+  document.getElementById('sessionIdDisplay').textContent = botId.substring(0,15) + '...';
+
+  // ─── Connection check ────────────────────────────────────
+  async function checkConnection() {
+    try {
+      const r = await fetch(`${BACKEND_URL}/health`);
+      setStatus(r.ok ? 'connected' : 'error');
+    } catch { setStatus('error'); }
+  }
+
+  function setStatus(s) {
+    connectionStatus = s;
+    const badge = document.getElementById('statusBadge');
+    const dot   = document.getElementById('statusDot');
+    const text  = document.getElementById('statusText');
+    badge.className = `status-indicator ${s}`;
+    dot.className   = `status-dot ${s}`;
+    text.textContent = s === 'connected' ? 'Online' : s === 'checking' ? 'Connecting...' : 'Offline';
+    document.getElementById('sendButton').disabled = (s === 'error' || loading);
+  }
+
+  checkConnection();
+  setInterval(checkConnection, 30000);
+
+  // ─── UI Helpers ───────────────────────────────────────────
+  function toggleMenu() {
+    const m = document.getElementById('dropdownMenu');
+    m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.header-right')) document.getElementById('dropdownMenu').style.display = 'none';
+  });
+
+  function setInput(text) {
+    const box = document.getElementById('inputBox');
+    box.value = text;
+    autoResize(box);
+    box.focus();
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function scrollToBottom() {
+    const chatArea = document.getElementById('chatArea');
+    setTimeout(() => {
+      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+    }, 50);
+  }
+
+  function formatTime(iso) {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Copy message to clipboard
+  async function copyMessage(idx) {
+    const msg = messages[idx];
+    if (!msg) return;
+    try {
+      await navigator.clipboard.writeText(msg.content);
+      const btn = document.querySelector(`[data-copy-idx="${idx}"]`);
+      if (btn) {
+        btn.textContent = '✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋';
+          btn.classList.remove('copied');
+        }, 1500);
+      }
+    } catch (e) { console.error('Copy failed', e); }
+  }
+
+  // Show/hide typing indicator with animation
+  function showTypingIndicator(show) {
+    const el = document.getElementById('typingIndicator');
+    if (show) {
+      el.style.display = 'flex';
+      requestAnimationFrame(() => el.classList.add('visible'));
+    } else {
+      el.classList.remove('visible');
+      setTimeout(() => { el.style.display = 'none'; }, 250);
+    }
+  }
+
+  function renderMessages() {
+    const welcome = document.getElementById('welcomeScreen');
+    const list    = document.getElementById('messagesList');
+
+    if (messages.length === 0) {
+      welcome.style.display = 'flex';
+      list.innerHTML = '';
+      return;
+    }
+    welcome.style.display = 'none';
+
+    list.innerHTML = messages.map((m, idx) => {
+      // Security badge for user messages
+      let securityBadge = '';
+      if (m.role === 'user') {
+        const status = m.securityStatus || 'pending';
+        const icons = {
+          pending: '❓',
+          scanning: '🔄',
+          safe: '✓',
+          alert: '⚠️',
+          pii: '🔒'
+        };
+        const tooltips = {
+          pending: 'Awaiting security scan',
+          scanning: 'Scanning for threats...',
+          safe: 'Message verified safe',
+          alert: m.securityMessage || 'Security issue detected',
+          pii: 'PII detected & anonymized'
+        };
+        securityBadge = `<span class="security-badge security-tooltip ${status}" data-tooltip="${tooltips[status]}" data-msg-idx="${idx}">${icons[status]}</span>`;
+      }
+      
+      return `
+        <div class="message ${m.role}" data-msg-idx="${idx}">
+          <div class="message-avatar ${m.role}">
+            ${m.role === 'user' ? '👤' : m.role === 'system' ? '⚠️' : '<img src="/static/loco.png" alt="AI" style="width:100%;height:100%;object-fit:contain;border-radius:50%">'}
+          </div>
+          <div class="message-content-wrapper">
+            <button class="copy-btn" data-copy-idx="${idx}" onclick="copyMessage(${idx})" title="Copy message">📋</button>
+            <div class="message-bubble ${m.role}">
+              <p class="message-text" style="white-space:pre-wrap">${escHtml(m.content)}${m.role === 'user' ? securityBadge : ''}</p>
+              <div class="message-time">${formatTime(m.timestamp)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    scrollToBottom();
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ─── Send Message ─────────────────────────────────────────
+  async function sendMessage() {
+    const box = document.getElementById('inputBox');
+    const text = box.value.trim();
+    if (!text || loading || connectionStatus === 'error') return;
+
+    // Add user message with pending security status
+    const userMsgIdx = messages.length;
+    messages.push({ 
+      role: 'user', 
+      content: text, 
+      timestamp: new Date().toISOString(),
+      securityStatus: 'pending'
+    });
+    box.value = '';
+    box.style.height = 'auto';
+    loading = true;
+    document.getElementById('sendButton').disabled = true;
+    showTypingIndicator(true);
+    renderMessages();
+
+    // Animate to scanning after a brief delay
+    setTimeout(() => {
+      if (messages[userMsgIdx]) {
+        messages[userMsgIdx].securityStatus = 'scanning';
+        updateSecurityBadge(userMsgIdx);
+      }
+    }, 300);
+
+    try {
+      // ================================================================
+      // PHASE 1: Guardrails validation (emoji updates immediately)
+      // ================================================================
+      const scanResponse = await fetch(`${BACKEND_URL}/api/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text, bot_id: botId })
+      });
+      const scanData = await scanResponse.json();
+      
+      // Update security badge IMMEDIATELY after validation
+      const detections = scanData.detections || {};
+      const piiData = detections.pii || {};
+      const hasPii = (piiData.entities && piiData.entities.length > 0) || piiData.detected;
+      const isBlocked = !scanData.is_safe;
+      
+      // Update badge immediately based on scan result
+      if (isBlocked) {
+        messages[userMsgIdx].securityStatus = 'alert';
+        messages[userMsgIdx].securityMessage = scanData.message || 'Blocked by security';
+      } else if (hasPii) {
+        messages[userMsgIdx].securityStatus = 'pii';
+        messages[userMsgIdx].securityMessage = 'PII anonymized';
+      } else {
+        messages[userMsgIdx].securityStatus = 'safe';
+      }
+      updateSecurityBadge(userMsgIdx);
+      renderMessages();
+      
+      // ================================================================
+      // PHASE 2: Always call test-chat for storage + LLM response
+      // (Blocked messages get canned response, safe messages get LLM response)
+      // ================================================================
+      const llmResponse = await fetch(`${BACKEND_URL}/api/test-chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text, bot_id: botId, conv_id: convId, model: 'gpt-4o-mini' })
+      });
+      const llmData = await llmResponse.json();
+      
+      if (llmData.success && llmData.response) {
+        messages.push({ role: 'ai', content: llmData.response, timestamp: new Date().toISOString() });
+      } else {
+        messages.push({ role: 'system', content: llmData.detail || llmData.message || 'An error occurred.', timestamp: new Date().toISOString() });
+      }
+
+    } catch (err) {
+      messages[userMsgIdx].securityStatus = 'alert';
+      messages[userMsgIdx].securityMessage = 'Connection error';
+      messages.push({ role: 'system', content: 'Failed to connect to server. Please try again.', timestamp: new Date().toISOString() });
+    } finally {
+      loading = false;
+      showTypingIndicator(false);
+      document.getElementById('sendButton').disabled = false;
+      renderMessages();
+    }
+  }
+
+  // Update just the security badge without re-rendering entire list
+  function updateSecurityBadge(msgIdx) {
+    const badge = document.querySelector(`[data-msg-idx="${msgIdx}"].security-badge`);
+    if (badge && messages[msgIdx]) {
+      const status = messages[msgIdx].securityStatus;
+      const icons = { pending: '❓', scanning: '🔄', safe: '✓', alert: '⚠️', pii: '🔒' };
+      badge.className = `security-badge security-tooltip ${status}`;
+      badge.textContent = icons[status];
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  // ─── Actions ──────────────────────────────────────────────
+  function clearChat() {
+    messages = [];
+    renderMessages();
+    document.getElementById('dropdownMenu').style.display = 'none';
+  }
+
+  function resetSession() {
+    localStorage.removeItem('bot_id');
+    localStorage.removeItem('conv_id');
+    botId = getBotId();
+    convId = getConvId();
+    document.getElementById('sessionIdDisplay').textContent = botId.substring(0,15) + '...';
+    messages = [];
+    renderMessages();
+    document.getElementById('dropdownMenu').style.display = 'none';
+    alert(`New session started!\nBot ID: ${botId}`);
+  }
+
+  function showSessionInfo() {
+    alert(`Bot ID: ${botId}\n\nThis unique ID identifies your chat session.`);
+    document.getElementById('dropdownMenu').style.display = 'none';
+  }
+</script>
+</body>
+</html>

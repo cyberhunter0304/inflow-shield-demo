@@ -1,0 +1,472 @@
+# iNextLabs RAG Knowledge Base
+# Source: https://inextlabs.ai and related pages
+# Compiled: March 2026
+# Purpose: Retrieval-Augmented Generation (RAG) corpus
+
+================================================================================
+SECTION 1: COMPANY OVERVIEW
+Source: https://inextlabs.ai | https://inextlabs.ai/about-us
+================================================================================
+
+Company Name: iNextLabs (also written as iNextLabs Pte Ltd)
+Headquarters: Singapore, Central Region, Singapore
+Website: https://www.inextlabs.ai
+Documentation Portal: https://docs.inextlabs.ai
+Partner Portal: https://demos.inextlabs.ai
+Contact (Partners): partners@inextlabs.com
+Contact (Careers): careers@inextlabs.com
+CEO: Sachin
+COO: Murugappan
+
+Tagline: "Building Agentic AI for Enterprise Excellence"
+Mission: Empower businesses with Generative AI to enhance efficiency, accuracy, and growth across industries.
+Facebook: INextLabs Singapore (~1,649 followers) — "Empowering businesses with the right AI, the right way"
+
+Vision: iNextLabs envisions a future where businesses of all sizes and industries seamlessly integrate Generative AI solutions into their customer interactions, setting new standards for personalized and efficient service. They aspire to lead this transformation, continually pushing the boundaries of innovation in Conversational AI.
+
+Core Value Proposition: iNextLabs empowers brands to acquire, convert, engage, and delight users through Generative AI-driven, personalized, and conversational experiences across 30+ channels and over 130+ languages.
+
+Industries Served: Banking, Retail, Food & Beverage (F&B), Healthcare, E-commerce, Finance, Logistics, Non-profit organizations, Information Technology and Services, Apparel & Fashion, Building Materials.
+
+Key Differentiators:
+- Agentic AI at the core of all products
+- 30+ messaging and communication channels supported
+- 130+ languages supported
+- NLP-based AI Chatbots (referred to as Botify platform)
+- 24/7 customer engagement automation
+- Industry-specific pre-built intelligence out of the box
+- Subscription pricing model with free trial (no credit card required)
+- API available for developer integrations
+
+Integrations: Zoho CRM, Zendesk Explore, Salesforce Platform, HubSpot CRM, Shopify, Zendesk Suite
+
+================================================================================
+SECTION 2: PRODUCT SUITE — inFlow AI AGENTS
+Source: https://inextlabs.ai/products/ | https://docs.inextlabs.ai
+================================================================================
+
+The core product platform is called "inFlow". It consists of a unified suite of AI Agents:
+- inFlow EngageAI
+- inFlow InsightsAI
+- inFlow DocsAI
+- inFlow AssistAI (Agent Assist)
+
+These agents work together to transform customer support, business analytics, and agent productivity through intelligent, real-time automation.
+
+---
+
+PRODUCT: inFlow EngageAI
+Source: https://inextlabs.ai/products/inflow-engage-ai
+---
+Description: Delivers personalized, always-on customer experiences across channels to boost satisfaction, build loyalty, and improve conversion rates.
+
+Key Capabilities:
+- Seamless, AI-powered customer interactions across WhatsApp, web, and voice channels
+- All managed through a unified platform
+- Omnichannel engagement: Connect with customers on WhatsApp, Facebook, Instagram, and 40+ channels
+- Hyper-targeted, Gen AI-powered conversations
+- Instant scalability to reach millions of customers
+- Cost-efficient customer acquisition through automated, personalized AI interactions
+- Comprehensive automation for appointments, orders, payments, user inquiries, and feedback
+- Industry-specific solutions for retail, healthcare, finance, e-commerce, and more
+- Boost conversions with higher engagement rates
+- Pre-built intelligence designed for specific industries
+
+---
+
+PRODUCT: inFlow EngageAI (Sales variant)
+Source: https://inextlabs.ai/products/inflow-engage-ai-sales
+---
+Description: AI-powered sales engagement tool focused on lead generation and conversion.
+
+Key Capabilities:
+- AI-driven lead generation and qualification
+- Personalized conversational marketing via WhatsApp and other channels
+- Automated sales workflows
+- Limited-Time Offers (LTO) with countdown timers on WhatsApp to boost urgency and sales
+- WhatsApp Carousel Template for showcasing products in a single engaging message
+- Direct communication channel bypassing traditional app and email overhead
+- Integration with CRM platforms for sales pipeline management
+
+---
+
+PRODUCT: inFlow EngageAI (Customer Service variant)
+Source: https://inextlabs.ai/products/customer-service
+---
+Description: AI-powered customer service automation.
+
+Key Capabilities:
+- NLP-based chatbots that handle customer support queries 24/7
+- Sentiment analysis on customer interactions
+- Human agent handoff when required
+- Adding custom phrases and FAQs
+- Transcript recording for compliance and quality review
+- Rich customer experience delivery
+- Proactive notifications to customers
+- Lower customer support costs through automation
+- Increased customer satisfaction through faster, more personalized responses
+- Platforms supported: Google Search, Google Maps, Web/Mobile App, WhatsApp, Telegram, Facebook Messenger, Facebook Workplace, Microsoft Teams, and more
+
+---
+
+PRODUCT: inFlow DocsAI
+Source: https://inextlabs.ai/products/inflow-docsai
+---
+Description: Document intelligence agent that understands, extracts, and automates document workflows, delivering accurate, actionable data through a unified platform.
+
+Key Capabilities:
+- Goes beyond document automation — acts as an intelligent agent for business operations
+- Powered by agentic AI at its core
+- Does not just read and extract data — it validates, reasons, and takes action
+- Reconciles invoices, enforces compliance, and updates connected systems
+- Works autonomously to turn documents into decisions
+- Context understanding: interprets meaning and intent beyond keywords
+- Anomaly detection: reasons with intelligence to validate, compare, and spot anomalies instantly
+- Autonomous action: updates systems, reconciles data, and drives decisions
+- Processes forms, invoices, contracts, and other unstructured documents
+- Automates classification and validation workflows
+- Available on Microsoft AppSource and Azure Marketplace
+
+---
+
+PRODUCT: inFlow InsightsAI
+Source: https://inextlabs.ai/products/inflow-insights-ai
+---
+Description: Transforms natural language queries into instant dashboards, SQL, and analytics by connecting directly to data sources.
+
+Key Capabilities:
+- Natural language to SQL conversion
+- Instant dashboard generation from plain language questions
+- Connects directly to enterprise data sources
+- Transforms data into actionable intelligence
+- No-code analytics for business users
+- Supports business analytics and reporting automation
+- Available on Microsoft AppSource and Azure Marketplace
+
+---
+
+PRODUCT: inFlow AssistAI (Agent Assist)
+Source: https://inextlabs.ai/products/customer-service | https://docs.inextlabs.ai
+---
+Description: Empowers human agents with real-time AI support to boost productivity, improve accuracy, and deliver customer satisfaction efficiently at scale.
+
+Key Capabilities:
+- Real-time contextual suggestions during live customer chats
+- Knowledge retrieval from internal knowledge bases
+- Smart prompts to help agents respond faster and more accurately
+- Reduces time-to-resolution for complex queries
+- Bridges AI automation with human oversight
+
+================================================================================
+SECTION 3: PLATFORM CAPABILITIES
+Source: https://inextlabs.ai/products/omnichannel | https://inextlabs.ai/products/security | https://inextlabs.ai/products/data-governance | https://inextlabs.ai/products/integrations | https://inextlabs.ai/products/foundation-model
+================================================================================
+
+---
+
+CAPABILITY: Omnichannel
+Source: https://inextlabs.ai/products/omnichannel
+---
+Description: AI solutions for seamless customer communication across all major messaging and communication platforms.
+
+Supported Channels (40+ total):
+- WhatsApp
+- Facebook Messenger
+- Facebook Workplace
+- Instagram
+- Telegram
+- Google Search
+- Google Maps
+- Web/Mobile App
+- Microsoft Teams
+- And 30+ additional channels
+
+Highlights:
+- 130+ languages supported
+- Unified inbox and management console
+- Real-time broadcast messaging capabilities
+- Customer database building through channel interactions
+
+---
+
+CAPABILITY: Security
+Source: https://inextlabs.ai/products/security
+---
+Description: Enterprise-grade security built into the inFlow platform to ensure safe and compliant AI deployments.
+
+Key Aspects:
+- Secure handling of customer data and interactions
+- Compliance-ready infrastructure
+- Protection against data leaks and unauthorized access
+- Aligned with enterprise regulatory requirements
+
+---
+
+CAPABILITY: Data Governance
+Source: https://inextlabs.ai/products/data-governance
+---
+Description: AI-powered data governance tools to enhance data quality and security, ensuring compliance while managing the data lifecycle for informed decisions.
+
+Key Aspects:
+- Data quality enforcement
+- Data lifecycle management
+- Compliance support
+- Governance policies for AI model usage
+- Ensures AI models are trained and operated on trustworthy data
+
+---
+
+CAPABILITY: Foundation Model
+Source: https://inextlabs.ai/products/foundation-model
+---
+Description: The underlying AI model infrastructure powering iNextLabs' products.
+
+Key Aspects:
+- Generative AI foundation powering all inFlow agents
+- Supports conversational AI, data analysis, and document intelligence
+- Enterprise-grade reliability
+- Enables hyper-targeted, personalized conversational experiences
+
+---
+
+CAPABILITY: Integrations
+Source: https://inextlabs.ai/products/integrations
+---
+Description: Pre-built and API-based integrations connecting inFlow with the broader enterprise technology ecosystem.
+
+Supported Integrations:
+- Zoho CRM
+- Salesforce Platform
+- HubSpot CRM
+- Zendesk Suite
+- Zendesk Explore
+- Shopify
+- Microsoft Teams
+- WhatsApp Business API
+- Azure Marketplace (inFlow listed as SaaS product)
+- Microsoft AppSource
+
+API Capabilities:
+- The inFlow Portal APIs allow developers to programmatically manage broadcasts, knowledge bases, contacts, and more across AI agents
+- Built for flexibility and scale
+- Enables seamless integration into existing workflows and systems
+- Developer documentation available at: https://docs.inextlabs.ai/docs/api/overview
+
+================================================================================
+SECTION 4: GENERATIVE AI SOLUTIONS
+Source: https://inextlabs.ai/generative-ai
+================================================================================
+
+iNextLabs positions itself as a pioneer in harnessing the power of Generative AI for enterprise use. Their generative AI solutions span:
+
+1. Conversational AI — Empowering seamless interactions with customers and internal users
+2. Data Analysis — Providing valuable insights from enterprise data
+3. Document Intelligence — Automating document workflows with reasoning and action
+4. Customer Experience Transformation — Redefining how businesses engage with customers
+
+Approach:
+- iNextLabs empowers enterprise leaders to evaluate the viability of their ideas for practical Generative AI implementation
+- Solutions are industry-specific and come with pre-built intelligence
+- Businesses can integrate Gen AI into customer interactions with scalable, subscription-based products
+- Focus on practical ROI: reduced costs, increased conversion, and higher customer satisfaction
+
+================================================================================
+SECTION 5: ECI (Enterprise Conversational Intelligence)
+Source: https://inextlabs.ai/eci
+================================================================================
+
+ECI stands for Enterprise Conversational Intelligence — a framework/solution offered by iNextLabs for enterprise AI deployments.
+
+Key Aspects:
+- Focused on enterprise-grade AI integration
+- Bridges conversational AI capabilities with enterprise data and workflows
+- Supports secure, scalable, and governed AI adoption
+- Enables businesses to manage data and AI assets responsibly
+
+================================================================================
+SECTION 6: PARTNERS
+Source: https://inextlabs.ai/partners
+================================================================================
+
+iNextLabs operates a partner ecosystem designed to help solution providers, system integrators, and technology companies deliver AI solutions using iNextLabs' platform.
+
+Partner Program Highlights:
+- Exclusive access to demos, solution architectures, decks, and marketing assets
+- Centralized partner hub to collaborate, learn, and grow
+- Access to Partner Portal at: https://demos.inextlabs.ai
+- Contact for partner access: partners@inextlabs.com
+- Advanced Features APIs and Management tools available exclusively to partners
+
+Known Partners:
+- Exist Software Labs (Philippines): Partnership to integrate iNextLabs AI capabilities into Exist's software solutions for banking, retail, and logistics clients across Asia Pacific, Australia, and the US. Goals include: delivering AI-powered chatbots and virtual assistants, automating repetitive processes, accelerating digital transformation across industries, and enhancing customer engagement through personalized AI-driven interactions.
+
+Partner Value Proposition:
+- Deliver cutting-edge AI-powered chatbot and virtual assistant solutions
+- Drive digital transformation across banking, retail, and logistics
+- Reduce operational costs through intelligent process automation
+- Enhance customer experience with faster, more personalized support
+
+================================================================================
+SECTION 7: RESOURCES
+================================================================================
+
+---
+
+RESOURCE TYPE: Case Studies
+Source: https://inextlabs.ai/resources/casestudy
+---
+Description: Real-world examples of how iNextLabs solutions have driven innovation and results for clients across various industries.
+
+Notable Use Cases Referenced:
+- Abhi Vairavan Plumbing Co.: Used WhatsApp Bot with broadcast features to build a customer database and share new product launches directly with customers
+- Restaurant/F&B client: Used inFlow (WhatsApp-based AI) to streamline high order volumes, collect automated customer feedback, and improve customer service efficiency
+- Non-profit organization: Used WhatsApp broadcast module to raise funding from donors and volunteers, sending mass messages and collecting classified responses
+- Apparel & Fashion client: Saved significant time and money on customer support; appreciated iNextLabs' flexibility for core customizations
+- Healthcare (Health, Wellness & Fitness) client: Used iNextLabs for 2+ years, benefited from AI-driven customer support
+
+---
+
+RESOURCE TYPE: Library
+Source: https://inextlabs.ai/resources/library
+---
+Description: A comprehensive AI resource library at iNextLabs offering brochures, whitepapers, ebooks, articles, and more to help businesses stay informed and empowered on AI adoption.
+
+---
+
+RESOURCE TYPE: Blog
+Source: https://inextlabs.ai/resources/blog
+---
+Description: Latest news, updates, insights, and thought leadership content on AI technology, conversational AI, Generative AI, WhatsApp for business, and more.
+
+Topics covered include:
+- WhatsApp Business API for customer engagement
+- Limited-Time Offers (LTO) on WhatsApp for sales
+- WhatsApp Carousel Templates for product showcasing
+- Generative AI adoption strategies for enterprises
+- Chatbot vs. Conversational AI comparisons
+
+---
+
+RESOURCE TYPE: Webinars
+Source: https://inextlabs.ai/resources/webinars
+---
+Description: Live and recorded webinars featuring industry experts discussing the latest trends and advancements in artificial intelligence.
+
+Notable Webinar Topics:
+- Power of WhatsApp Business API for customer engagement strategy
+- AI Integration for WhatsApp — how businesses can leverage the platform with AI
+- Generative AI for SME business owners: replacing costly apps with WhatsApp solutions
+
+================================================================================
+SECTION 8: ABOUT US
+Source: https://inextlabs.ai/about-us
+================================================================================
+
+iNextLabs is a Singapore-based AI company (iNextLabs Pte Ltd) that specializes in building AI products tailored for enterprise success.
+
+Expertise areas:
+- Conversational AI
+- Data Analysis and Business Intelligence
+- Generative AI for enterprise use cases
+- Agentic AI — autonomous AI agents that reason, validate, and act
+
+Goal: To be the premier and trusted technology partner, enabling businesses to leverage Generative AI's capabilities in transforming customer experiences.
+
+History and Background:
+- Founded and headquartered in Singapore
+- Related entity: Myraa Technologies (listed on Crunchbase)
+- Listed on Azure Marketplace and Microsoft AppSource as a certified SaaS provider
+- Subscription-based pricing model; free trial available (no credit card required)
+- API available for developer integrations
+
+Culture and Values:
+- Celebrates International Women's Day and promotes women within the team
+- Committed to innovation, customer-centricity, and technological excellence
+- Active in community engagement through webinars and social media (LinkedIn, Facebook)
+
+================================================================================
+SECTION 9: CAREERS
+Source: https://inextlabs.ai/career
+================================================================================
+
+iNextLabs is actively recruiting talent to join their team as they scale their AI products.
+
+Open/Representative Roles:
+- Software Engineer (Node.js specialization): Requires 2+ years of experience in application and software development with Node.js
+
+How to Apply: Send resume to careers@inextlabs.com
+
+Culture:
+- Fast-growing AI startup environment
+- Focus on building cutting-edge AI products
+- Opportunities to contribute to product features actively used by enterprise clients globally
+
+================================================================================
+SECTION 10: TECHNICAL DETAILS & PLATFORM SPECS
+Source: https://docs.inextlabs.ai | https://azuremarketplace.microsoft.com
+================================================================================
+
+Deployment Options:
+- SaaS (Software as a Service) — primary model
+- Available on Azure Marketplace
+- Available on Microsoft AppSource
+
+Key Technical Features:
+- NLP-based AI Chatbot engine (referred to historically as "Botify")
+- Sentiment analysis
+- Human-agent handoff capability
+- Knowledge base management (phrases, FAQs)
+- Transcript recording and logging
+- Broadcast messaging system for mass outreach
+- Proactive notifications engine
+- Contact management via API
+- Multilingual support: 130+ languages
+- Channel support: 40+ messaging platforms
+
+Documentation Structure (docs.inextlabs.ai):
+- inFlow EngageAI Portal documentation
+- inFlow Agent Assist documentation
+- inFlow InsightsAI documentation
+- Partner Portal documentation
+- API Reference documentation (https://docs.inextlabs.ai/docs/api/overview)
+- AI Disclaimer
+- Privacy Policy: https://www.inextlabs.ai/privacy-policy
+- Terms of Service: https://www.inextlabs.ai/terms-of-service
+
+Pricing:
+- Model: Subscription
+- Free Trial: Available (no credit card required)
+- Custom enterprise pricing available
+
+================================================================================
+SECTION 11: KEY URLS REFERENCE
+================================================================================
+
+Homepage:                    https://inextlabs.ai/
+ECI:                         https://inextlabs.ai/eci
+Generative AI:               https://inextlabs.ai/generative-ai
+inFlow EngageAI:             https://inextlabs.ai/products/inflow-engage-ai
+inFlow EngageAI Sales:       https://inextlabs.ai/products/inflow-engage-ai-sales
+Customer Service:            https://inextlabs.ai/products/customer-service
+inFlow DocsAI:               https://inextlabs.ai/products/inflow-docsai
+inFlow InsightsAI:           https://inextlabs.ai/products/inflow-insights-ai
+Foundation Model:            https://inextlabs.ai/products/foundation-model
+Security:                    https://inextlabs.ai/products/security
+Omnichannel:                 https://inextlabs.ai/products/omnichannel
+Data Governance:             https://inextlabs.ai/products/data-governance
+Integrations:                https://inextlabs.ai/products/integrations
+Partners:                    https://inextlabs.ai/partners
+Case Studies:                https://inextlabs.ai/resources/casestudy
+Library:                     https://inextlabs.ai/resources/library
+Blog:                        https://inextlabs.ai/resources/blog
+Webinars:                    https://inextlabs.ai/resources/webinars
+About Us:                    https://inextlabs.ai/about-us
+Careers:                     https://inextlabs.ai/career
+Documentation:               https://docs.inextlabs.ai/
+API Docs:                    https://docs.inextlabs.ai/docs/api/overview
+Privacy Policy:              https://www.inextlabs.ai/privacy-policy
+Terms of Service:            https://www.inextlabs.ai/terms-of-service
+
+================================================================================
+END OF KNOWLEDGE BASE
+================================================================================

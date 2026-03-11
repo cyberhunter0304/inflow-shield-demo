@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>inFlow Shield — Analytics Dashboard</title>
+  <!-- Chart.js for analytics charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* Animation Variables */
+    :root {
+      --transition-fast: 150ms;
+      --transition-normal: 250ms;
+      --transition-slow: 400ms;
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffbf5 0%, #fff4e6 100%);
+      color: #78716c;
+      min-height: 100vh;
+    }
+    .dashboard-container { min-height: 100vh; padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex; align-items: stretch; gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .logo-box {
+      display: flex; align-items: center; justify-content: center;
+      background: white; border: 1px solid #fed7aa; border-radius: 1rem;
+      padding: 1rem 1.5rem; max-height: 120px; overflow: hidden;
+    }
+    .logo-box img { height: auto; max-height: 100px; width: auto; object-fit: contain; display: block; }
+    .dashboard-header {
+      flex: 1; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white; padding: 2rem; border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(249,115,22,0.2); position: relative; overflow: hidden;
+    }
+    .dashboard-header::before {
+      content: ''; position: absolute; top: -50%; right: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      border-radius: 50%; animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(20px)} }
+    .header-content { position: relative; z-index: 1; }
+    .dashboard-title { font-size: 2rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+    .dashboard-subtitle { font-size: 0.9375rem; opacity: 0.95; font-weight: 400; line-height: 1.6; }
+
+    /* ── Nav Toggle ── */
+    .nav-toggle-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white; text-decoration: none; transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(249,115,22,0.3); white-space: nowrap;
+    }
+    .nav-toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(249,115,22,0.45); }
+
+    /* ── Nav Tabs ── */
+    .view-toggle { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; align-items: center; }
+    .view-btn {
+      padding: 0.75rem 1.5rem; border: 1px solid #fde68a; border-radius: 0.5rem;
+      font-size: 0.9375rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      background: #fff; color: #a8a29e; font-family: inherit;
+    }
+    .view-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.15); border-color: #fdba74; color: #f97316; }
+    .view-btn.active { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(249,115,22,0.3); }
+
+    /* ── Stats Grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: #fff; padding: 1.5rem; border-radius: 0.75rem;
+      border: 1px solid #fed7aa; box-shadow: 0 1px 3px rgba(249,115,22,0.08);
+      display: flex; gap: 1rem; align-items: flex-start;
+      transition: all var(--transition-normal) var(--ease-out);
+      border-left-width: 4px;
+      opacity: 0; animation: card-fade-in var(--transition-slow) var(--ease-out) forwards;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0ms; }
+    .stat-card:nth-child(2) { animation-delay: 50ms; }
+    .stat-card:nth-child(3) { animation-delay: 100ms; }
+    .stat-card:nth-child(4) { animation-delay: 150ms; }
+    .stat-card:nth-child(5) { animation-delay: 200ms; }
+    .stat-card:nth-child(6) { animation-delay: 250ms; }
+    .stat-card:nth-child(7) { animation-delay: 300ms; }
+    @keyframes card-fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stat-card:hover { transform: translateY(-4px); border-color: #fdba74; box-shadow: 0 12px 32px rgba(249,115,22,0.18); }
+    .stat-icon {
+      font-size: 2rem; width: 3.5rem; height: 3.5rem; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(234,88,12,0.1)); border-radius: 0.75rem; flex-shrink: 0;
+      transition: transform var(--transition-normal) var(--ease-bounce);
+    }
+    .stat-card:hover .stat-icon { transform: scale(1.1); }
+    .stat-value {
+      font-size: 2.5rem; font-weight: 700; letter-spacing: -0.025em; color: #292524; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { font-size: 0.875rem; color: #a8a29e; font-weight: 500; margin-top: 0.5rem; }
+
+    /* ── Controls ── */
+    .controls-section {
+      background: #fff; padding: 1.5rem; border-radius: 0.75rem;
+      margin-bottom: 1.5rem; border: 1px solid #fed7aa; box-shadow: 0 1px 3px rgba(249,115,22,0.08);
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+    }
+    .search-box { flex: 1; min-width: 220px; position: relative; }
+    .search-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: #a8a29e; }
+    .search-input {
+      width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #fde68a;
+      border-radius: 0.5rem; font-size: 0.9375rem; background: #fffbf5; color: #292524;
+      font-family: inherit; transition: all 0.2s; outline: none;
+    }
+    .search-input:focus { border-color: #f97316; background: #fff; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+    .search-mode-group { display: flex; align-items: center; gap: 0.375rem; flex-wrap: wrap; }
+    .search-mode-btn {
+      padding: 0.5rem 0.875rem; border: 1px solid #fde68a; background: #fff;
+      border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; color: #78716c; font-family: inherit; white-space: nowrap;
+    }
+    .search-mode-btn:hover { border-color: #f97316; color: #f97316; background: rgba(249,115,22,0.05); }
+    .search-mode-btn.active { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border-color: transparent; box-shadow: 0 2px 8px rgba(249,115,22,0.25); }
+    .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 0.625rem 1.125rem; border: 1px solid #fde68a; background: #fff;
+      border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; color: #78716c; font-family: inherit;
+    }
+    .filter-btn:hover { border-color: #f97316; color: #f97316; background: rgba(249,115,22,0.05); }
+    .filter-btn.active { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(249,115,22,0.25); }
+    .controls-right { display: flex; gap: 0.5rem; align-items: center; margin-left: auto; }
+    .select-wrapper { position: relative; }
+    .sort-select {
+      padding: 0.625rem 2.25rem 0.625rem 1rem; border: 1px solid #fde68a;
+      border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;
+      background: #fff; color: #292524; cursor: pointer; appearance: none;
+      font-family: inherit; outline: none;
+    }
+    .sort-select:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+    .select-arrow { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: #a8a29e; }
+    .icon-btn {
+      padding: 0.625rem 1rem; border: 1px solid #fde68a; background: #fff;
+      border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; color: #78716c; font-family: inherit; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .icon-btn:hover { border-color: #f97316; color: #f97316; background: rgba(249,115,22,0.05); }
+    .icon-btn.danger:hover { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+
+    /* ── Results Summary ── */
+    .results-summary { font-size: 0.875rem; color: #78716c; margin-bottom: 1rem; padding: 0 0.25rem; }
+
+    /* ── Threads Container ── */
+    .threads-container { display: flex; flex-direction: column; gap: 0.75rem; }
+    .thread-card {
+      background: #fff; border: 1px solid #fed7aa; border-radius: 0.75rem; overflow: hidden;
+      transition: all var(--transition-normal) var(--ease-out);
+      opacity: 0; animation: thread-slide-in var(--transition-normal) var(--ease-out) forwards;
+    }
+    .thread-card:nth-child(1) { animation-delay: 0ms; }
+    .thread-card:nth-child(2) { animation-delay: 40ms; }
+    .thread-card:nth-child(3) { animation-delay: 80ms; }
+    .thread-card:nth-child(4) { animation-delay: 120ms; }
+    .thread-card:nth-child(5) { animation-delay: 160ms; }
+    .thread-card:nth-child(6) { animation-delay: 200ms; }
+    .thread-card:nth-child(7) { animation-delay: 240ms; }
+    .thread-card:nth-child(8) { animation-delay: 280ms; }
+    .thread-card:nth-child(9) { animation-delay: 320ms; }
+    .thread-card:nth-child(10) { animation-delay: 360ms; }
+    @keyframes thread-slide-in {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .thread-card:hover { box-shadow: 0 8px 24px rgba(249,115,22,0.15); transform: translateX(4px); }
+    .thread-header {
+      display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .thread-header.has-threats { border-left: 4px solid #ef4444; }
+    .thread-header.clean       { border-left: 4px solid #10b981; }
+    .thread-header:hover { background: rgba(249,115,22,0.02); }
+    .thread-expand-icon { color: #a8a29e; font-size: 0.875rem; flex-shrink: 0; transition: transform 0.2s; }
+    .thread-info { flex: 1; min-width: 0; }
+    .thread-id-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem; }
+    .thread-id-label { font-size: 0.75rem; color: #a8a29e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .thread-id {
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; font-size: 0.875rem;
+      color: #292524; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;
+      font-variant-numeric: tabular-nums;
+    }
+    .thread-meta { display: flex; gap: 1rem; font-size: 0.8125rem; color: #a8a29e; flex-wrap: wrap; }
+    .thread-threats { flex-shrink: 0; }
+    .clean-badge { background: rgba(16,185,129,0.1); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 0.375rem 0.875rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 600; }
+    .threat-summary { display: flex; flex-direction: column; align-items: flex-end; gap: 0.375rem; }
+    .threat-count { font-size: 0.8125rem; font-weight: 700; color: #dc2626; }
+    .threat-badges-compact { display: flex; gap: 0.375rem; flex-wrap: wrap; justify-content: flex-end; }
+    .badge-pii       { background: rgba(245,158,11,0.15); color: #b45309; border: 1px solid rgba(245,158,11,0.3); padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; }
+    .badge-secrets   { background: rgba(139,92,246,0.15); color: #6d28d9; border: 1px solid rgba(139,92,246,0.3); padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; }
+    .badge-jailbreak { background: rgba(239,68,68,0.15); color: #b91c1c; border: 1px solid rgba(239,68,68,0.3); padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; }
+    .badge-toxicity  { background: rgba(220,38,38,0.15); color: #991b1b; border: 1px solid rgba(220,38,38,0.3); padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; }
+    .badge-blocked   { background: rgba(220,38,38,0.2); color: #7f1d1d; border: 1px solid rgba(220,38,38,0.4); padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; }
+    .thread-delete-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s; font-size: 1rem; flex-shrink: 0; }
+    .thread-delete-btn:hover { background: #fef2f2; }
+
+    /* ── Thread Detail ── */
+    .details-container { background: #fff; border-radius: 0.75rem; padding: 1.5rem; border: 1px solid #fed7aa; box-shadow: 0 1px 3px rgba(249,115,22,0.08); }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; background: #fef3c7; color: #78716c;
+      border: none; border-radius: 0.5rem; font-weight: 600; font-size: 0.9375rem;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .back-btn:hover { background: linear-gradient(135deg, #f97316, #ea580c); color: white; transform: translateX(-2px); }
+    .btn-delete-session {
+      padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white; border: none; border-radius: 0.5rem; font-weight: 600;
+      font-size: 0.9375rem; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-delete-session:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(220,38,38,0.3); }
+    .bot-info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; margin: 1.5rem 0; padding: 1.5rem;
+      background: #fffbf5; border-radius: 0.75rem; border: 1px solid #fed7aa;
+    }
+    .info-label { font-size: 0.75rem; color: #a8a29e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .info-value { font-size: 1.0625rem; color: #292524; font-weight: 600; letter-spacing: -0.025em; }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #292524; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; letter-spacing: -0.025em; }
+
+    /* ── Conversations ── */
+    .conversations-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .conversation-card { background: #fffbf5; border: 1px solid #fde68a; border-radius: 0.5rem; }
+    .conversation-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; transition: background 0.2s; }
+    .conversation-header:hover { background: rgba(249,115,22,0.04); }
+    .conversation-expand-icon { color: #a8a29e; font-size: 0.875rem; flex-shrink: 0; }
+    .conversation-info { flex: 1; min-width: 0; }
+    .conversation-label { font-size: 0.75rem; color: #a8a29e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .conversation-id-text { font-family: 'SF Mono','Monaco','Consolas',monospace; font-size: 0.8125rem; color: #292524; font-weight: 600; }
+    .conversation-meta { display: flex; gap: 1rem; font-size: 0.8125rem; color: #a8a29e; margin-top: 0.25rem; flex-wrap: wrap; }
+    .conversation-threats { flex-shrink: 0; }
+    .clean-badge-small { color: #10b981; font-size: 1.25rem; }
+    .events-list { padding: 1rem 1.25rem; border-top: 1px solid #fde68a; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    /* ── Event Cards ── */
+    .event-card {
+      border-radius: 0.75rem; padding: 1.25rem; border: 1px solid #fed7aa;
+      box-shadow: 0 1px 2px rgba(249,115,22,0.06); transition: all var(--transition-normal) var(--ease-out);
+    }
+    .event-card:hover { box-shadow: 0 8px 20px rgba(249,115,22,0.15); transform: translateY(-3px); }
+    .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+    .event-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 1.75rem; height: 1.75rem; padding: 0 0.375rem;
+      background: rgba(249,115,22,0.12); color: #9a3412; border-radius: 0.375rem;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .event-timestamp { font-size: 0.8125rem; color: #a8a29e; font-weight: 500; }
+    .event-status { padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; color: white; white-space: nowrap; }
+    .event-status.blocked { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+    .event-status.safe    { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .risk-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .risk-badge.risk-critical,.risk-badge.risk-high { background: rgba(220,38,38,0.12); color: #b91c1c; border: 1px solid rgba(220,38,38,0.25); }
+    .risk-badge.risk-medium { background: rgba(245,158,11,0.12); color: #b45309; border: 1px solid rgba(245,158,11,0.25); }
+    .risk-badge.risk-low,.risk-badge.risk-safe { background: rgba(22,163,74,0.12); color: #15803d; border: 1px solid rgba(22,163,74,0.25); }
+    .event-section { margin-bottom: 1rem; }
+    .event-section:last-child { margin-bottom: 0; }
+    .event-section-title { font-size: 0.75rem; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .event-text {
+      background: #fffbf5; padding: 0.75rem; border-radius: 0.375rem;
+      font-size: 0.875rem; color: #78716c; border: 1px solid #fde68a;
+      line-height: 1.6; font-family: 'SF Mono','Monaco','Consolas',monospace; white-space: pre-wrap; word-break: break-word;
+    }
+    .detections-grid { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .detection-badge { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); padding: 0.75rem; border-radius: 0.5rem; min-width: 120px; }
+    .detection-name { font-weight: 700; font-size: 0.875rem; color: #292524; margin-bottom: 0.25rem; }
+    .detection-status { font-size: 0.75rem; color: #dc2626; }
+    .block-reason,.llm-response {
+      background: rgba(220,38,38,0.05); padding: 0.75rem; border-radius: 0.375rem;
+      font-family: 'SF Mono','Monaco','Consolas',monospace; font-size: 0.875rem; line-height: 1.6; color: #78716c;
+    }
+    .llm-response { background: rgba(16,185,129,0.05); }
+    .metrics-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .metric-box { background: #fffbf5; border: 1px solid #fde68a; padding: 0.75rem 1rem; border-radius: 0.5rem; }
+    .metric-label { font-size: 0.75rem; color: #a8a29e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .metric-value { font-size: 1.25rem; font-weight: 700; color: #292524; font-variant-numeric: tabular-nums; }
+
+    /* ── Compact Event Cards ── */
+    .event-card-compact {
+      border-radius: 0.75rem; padding: 0.875rem 1rem 0.875rem 1.25rem; margin-bottom: 0.625rem;
+      background: white; border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: all var(--transition-normal) var(--ease-out);
+      position: relative; border-left: 4px solid transparent;
+    }
+    .event-card-compact.blocked { background: linear-gradient(135deg, #fff5f5, #fef2f2); border-color: #fecaca; border-left-color: #ef4444; }
+    .event-card-compact.safe { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border-color: #bbf7d0; border-left-color: #22c55e; }
+    .event-card-compact.pii { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-color: #fde68a; border-left-color: #f59e0b; }
+    .event-card-compact:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    .event-card-compact.blocked:hover { box-shadow: 0 8px 20px rgba(239,68,68,0.15); }
+    .event-card-compact.safe:hover { box-shadow: 0 8px 20px rgba(34,197,94,0.15); }
+    .event-card-compact.pii:hover { box-shadow: 0 8px 20px rgba(245,158,11,0.15); }
+    .event-card-compact:last-child { margin-bottom: 0; }
+    
+    .event-row-main { 
+      display: flex; align-items: center; gap: 0.625rem; flex-wrap: wrap; 
+      padding-bottom: 0.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .event-num { 
+      font-size: 0.75rem; font-weight: 700; color: white; 
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      padding: 0.25rem 0.625rem; border-radius: 1rem; 
+      min-width: 2rem; text-align: center;
+      box-shadow: 0 2px 4px rgba(249,115,22,0.25);
+    }
+    .event-status-sm { 
+      font-size: 0.6875rem; font-weight: 700; padding: 0.25rem 0.75rem; 
+      border-radius: 1rem; letter-spacing: 0.02em;
+      display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    .event-status-sm.blocked { 
+      background: linear-gradient(135deg, #ef4444, #dc2626); 
+      color: white; box-shadow: 0 2px 6px rgba(239,68,68,0.3);
+    }
+    .event-status-sm.safe { 
+      background: linear-gradient(135deg, #22c55e, #16a34a); 
+      color: white; box-shadow: 0 2px 6px rgba(34,197,94,0.3);
+    }
+    .risk-tag { 
+      font-size: 0.625rem; font-weight: 700; padding: 0.1875rem 0.5rem; 
+      border-radius: 0.25rem; text-transform: uppercase; letter-spacing: 0.04em;
+      border: 1px solid;
+    }
+    .risk-tag.risk-critical, .risk-tag.risk-high { 
+      background: #fef2f2; color: #dc2626; border-color: #fecaca;
+    }
+    .risk-tag.risk-medium { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+    .risk-tag.risk-low, .risk-tag.risk-safe { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+    .event-time { 
+      font-size: 0.75rem; color: #6b7280; margin-left: auto; 
+      display: flex; align-items: center; gap: 0.25rem;
+    }
+    .event-perf { 
+      font-size: 0.6875rem; color: #059669; font-weight: 600;
+      background: #ecfdf5; padding: 0.1875rem 0.5rem; border-radius: 0.25rem; 
+      border: 1px solid #a7f3d0;
+    }
+    
+    .event-prompt-row { 
+      display: flex; align-items: flex-start; gap: 0.5rem; 
+      padding: 0.5rem 0.625rem; background: #f9fafb; border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .prompt-label { font-size: 0.875rem; flex-shrink: 0; opacity: 0.7; }
+    .prompt-text-compact { 
+      font-size: 0.8125rem; color: #374151; line-height: 1.5; 
+      word-break: break-word; font-family: inherit;
+      flex: 1; min-width: 0;
+    }
+    
+    .event-threats-row { 
+      display: flex; gap: 0.375rem; flex-wrap: wrap; 
+      padding-top: 0.375rem;
+    }
+    .threat-tag { 
+      font-size: 0.6875rem; font-weight: 600; 
+      padding: 0.25rem 0.625rem; border-radius: 1rem; 
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      border: 1px solid; text-transform: capitalize;
+      background: #f3f4f6; color: #4b5563; border-color: #d1d5db;
+    }
+    .threat-tag::before { content: '⚠'; font-size: 0.625rem; }
+    .threat-tag.pii { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .threat-tag.toxicity { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .threat-tag.jailbreak { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+    .threat-tag.secrets { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .threat-tag.injection, .threat-tag.promptinjection { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    
+    .event-block-row { 
+      font-size: 0.75rem; color: #991b1b; font-weight: 500;
+      background: linear-gradient(135deg, #fef2f2, #fee2e2); 
+      padding: 0.5rem 0.75rem; border-radius: 0.5rem; 
+      line-height: 1.5; margin-top: 0.375rem;
+      border: 1px solid #fecaca;
+      display: flex; align-items: flex-start; gap: 0.375rem;
+    }
+    .events-list { 
+      padding: 0.875rem 1rem; border-top: 1px solid #fde68a; 
+      display: flex; flex-direction: column; gap: 0.5rem; 
+      background: #fffbf5;
+    }
+
+    /* ── Charts View ── */
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 28px; }
+    .chart-container { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 2px 8px rgba(249,115,22,0.08); border: 1px solid #fed7aa; }
+    .chart-title { font-size: 18px; font-weight: 700; color: #292524; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .chart-canvas-wrapper { position: relative; height: 300px; }
+
+    /* ── Pagination ── */
+    .pagination-container { margin-top: 30px; padding: 20px; background: #fffbf5; border-radius: 8px; display: flex; flex-direction: column; gap: 15px; align-items: center; border: 1px solid #fed7aa; }
+    .pagination-controls { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .page-btn {
+      padding: 8px 12px; border: 1px solid #fde68a; border-radius: 6px; background: #fff;
+      color: #78716c; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; font-family: inherit;
+    }
+    .page-btn:hover { border-color: #f97316; color: #f97316; }
+    .page-btn.active { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border-color: transparent; font-weight: 700; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .page-info { font-size: 13px; color: #78716c; }
+
+    /* ── Empty States ── */
+    .empty-state { text-align: center; padding: 4rem 2rem; background: #fff; border-radius: 0.75rem; border: 1px solid #fed7aa; animation: card-fade-in var(--transition-slow) var(--ease-out); }
+    .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .empty-state-title { font-size: 1.25rem; font-weight: 700; color: #292524; margin-bottom: 0.5rem; }
+
+    /* ── Loading ── */
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 1.5rem; animation: fade-in var(--transition-normal) var(--ease-out); }
+    .loading-spinner { font-size: 3rem; animation: spin 1.5s linear infinite; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ── Skeleton Loading ── */
+    .skeleton { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.5s infinite; }
+    @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-card { height: 80px; border-radius: 0.75rem; margin-bottom: 0.75rem; }
+    .skeleton-stat { height: 100px; border-radius: 0.75rem; }
+
+    /* ── View Transitions ── */
+    .view-content { animation: view-enter var(--transition-normal) var(--ease-out); }
+    @keyframes view-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Export Menu ── */
+    .export-wrapper { position: relative; }
+    .export-menu {
+      position: absolute; top: 100%; right: 0; margin-top: 0.5rem;
+      background: #fff; border: 1px solid #fed7aa; border-radius: 0.75rem;
+      box-shadow: 0 10px 40px rgba(249,115,22,0.15); min-width: 280px; z-index: 1000; overflow: hidden;
+    }
+    .export-menu-header { padding: 0.875rem 1rem; background: #fffbf5; border-bottom: 1px solid #fed7aa; font-weight: 700; color: #292524; font-size: 0.875rem; }
+    .export-option { padding: 0.75rem 1rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #78716c; border-bottom: 1px solid #fef3c7; }
+    .export-option:hover { background: rgba(249,115,22,0.05); color: #f97316; }
+    .export-option:last-child { border-bottom: none; }
+    .export-option-count { font-size: 0.75rem; color: #a8a29e; background: #fef3c7; padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: auto; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 768px) {
+      .dashboard-container { padding: 1rem; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; }
+      .controls-section { flex-direction: column; }
+      .controls-right { margin-left: 0; }
+      .thread-meta { flex-direction: column; gap: 0.25rem; }
+      .page-header { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .filter-group { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container" id="app">
+  <div class="loading-screen">
+    <div class="loading-spinner">⏳</div>
+    <div style="font-size:18px;color:#6b7280">Loading security logs...</div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  Config & State
+// ─────────────────────────────────────────────────────────────
+const BACKEND_URL = window.location.origin;
+const ITEMS_PER_PAGE = 20;
+
+let state = {
+  threads: [],
+  view: 'overview',       // 'overview' | 'analytics' | 'details'
+  selectedThread: null,
+  searchTerm: '',
+  searchMode: 'botId',    // 'botId' | 'threadId' | 'prompt'
+  filterType: 'all',
+  sortBy: 'date-desc',
+  currentPage: 1,
+  showExportMenu: false,
+  charts: {}
+};
+
+// ─────────────────────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────────────────────
+function formatDate(iso) {
+  if (!iso) return 'N/A';
+  return new Date(iso).toLocaleString();
+}
+function getRelativeTime(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000), h = Math.floor(diff / 3600000), d = Math.floor(diff / 86400000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
+  if (d < 7)  return `${d}d ago`;
+  return formatDate(iso);
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Data Fetching
+// ─────────────────────────────────────────────────────────────
+async function fetchAllThreads() {
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/security`);
+    const data = await r.json();
+
+    state.threads = (data.sessions || []).map(botLog => {
+      const events = botLog.security_events || [];
+      const convMap = {};
+      events.forEach(evt => {
+        const cid = evt.conversation_id || 'unknown';
+        if (!convMap[cid]) {
+          convMap[cid] = {
+            conversation_id: cid, thread_id: evt.thread_id || botLog.bot_id,
+            started_at: evt.timestamp, ended_at: evt.timestamp,
+            security_events: [], total_prompts: 0, blocked_prompts: 0,
+            pii_detections: 0, jailbreak_attempts: 0, toxicity_detections: 0, secrets_detections: 0
+          };
+        }
+        const c = convMap[cid];
+        if (evt.timestamp < c.started_at) c.started_at = evt.timestamp;
+        if (evt.timestamp > c.ended_at)   c.ended_at   = evt.timestamp;
+        c.security_events.push(evt);
+        c.total_prompts++;
+        if (evt.blocked)                                c.blocked_prompts++;
+        if (evt.detections?.pii?.detected)              c.pii_detections++;
+        if (evt.detections?.prompt_injection?.detected) c.jailbreak_attempts++;
+        if (evt.detections?.toxicity?.detected)         c.toxicity_detections++;
+        if (evt.detections?.pii?.secrets_detected)      c.secrets_detections++;
+      });
+      const conversations = Object.values(convMap);
+      const threadId = events[0]?.thread_id || botLog.bot_id;
+      const userId   = events[0]?.thread_id ? `user_${events[0].thread_id.replace(/^thread_/,'')}` : botLog.bot_id;
+      return {
+        thread_id: threadId, bot_id: botLog.bot_id, user_id: userId,
+        created_at: botLog.created_at, last_updated: botLog.last_updated,
+        total_prompts: botLog.total_prompts || 0, blocked_prompts: botLog.blocked_prompts || 0,
+        pii_detections: botLog.pii_detections || 0, jailbreak_attempts: botLog.jailbreak_attempts || 0,
+        toxicity_detections: botLog.toxicity_detections || 0, secrets_detections: botLog.secrets_detections || 0,
+        conversations, conversation_count: conversations.length
+      };
+    });
+  } catch (e) { console.error('Failed to fetch threads:', e); }
+}
+
+async function deleteThread(botId) {
+  await fetch(`${BACKEND_URL}/api/security-logs/${botId}`, { method: 'DELETE' });
+  await fetchAllThreads();
+  render();
+}
+
+async function clearAllThreads() {
+  await Promise.all(state.threads.map(t => fetch(`${BACKEND_URL}/api/security-logs/${t.bot_id}`, { method: 'DELETE' })));
+  await fetchAllThreads();
+  state.view = 'overview';
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Derived State
+// ─────────────────────────────────────────────────────────────
+function getStats() {
+  return state.threads.reduce((a, t) => ({
+    totalThreads:        a.totalThreads + 1,
+    totalConversations:  a.totalConversations + (t.conversation_count || 0),
+    totalPrompts:        a.totalPrompts + (t.total_prompts || 0),
+    totalBlocked:        a.totalBlocked + (t.blocked_prompts || 0),
+    totalPII:            a.totalPII + (t.pii_detections || 0),
+    totalJailbreaks:     a.totalJailbreaks + (t.jailbreak_attempts || 0),
+    totalToxicity:       a.totalToxicity + (t.toxicity_detections || 0),
+    totalSecrets:        a.totalSecrets + (t.secrets_detections || 0),
+  }), { totalThreads:0, totalConversations:0, totalPrompts:0, totalBlocked:0, totalPII:0, totalJailbreaks:0, totalToxicity:0, totalSecrets:0 });
+}
+
+function getFilteredThreads() {
+  let f = [...state.threads];
+  const q = state.searchTerm.toLowerCase();
+  if (q) {
+    if (state.searchMode === 'botId')    f = f.filter(t => (t.bot_id||'').toLowerCase().includes(q));
+    if (state.searchMode === 'threadId') f = f.filter(t => (t.thread_id||'').toLowerCase().includes(q));
+    if (state.searchMode === 'prompt')   f = f.filter(t =>
+      t.conversations?.some(c =>
+        c.security_events?.some(e => (e.prompt||'').toLowerCase().includes(q))
+      )
+    );
+  }
+  if (state.filterType === 'threats')   f = f.filter(t => t.pii_detections>0 || t.jailbreak_attempts>0 || t.toxicity_detections>0 || t.secrets_detections>0 || t.blocked_prompts>0);
+  if (state.filterType === 'clean')     f = f.filter(t => !t.pii_detections && !t.jailbreak_attempts && !t.toxicity_detections && !t.secrets_detections && !t.blocked_prompts);
+  if (state.filterType === 'pii')       f = f.filter(t => t.pii_detections > 0);
+  if (state.filterType === 'jailbreak') f = f.filter(t => t.jailbreak_attempts > 0);
+  if (state.filterType === 'toxicity')  f = f.filter(t => t.toxicity_detections > 0);
+  if (state.filterType === 'secrets')   f = f.filter(t => t.secrets_detections > 0);
+  f.sort((a, b) => {
+    if (state.sortBy === 'date-desc')    return new Date(b.last_updated||b.created_at) - new Date(a.last_updated||a.created_at);
+    if (state.sortBy === 'date-asc')     return new Date(a.last_updated||a.created_at) - new Date(b.last_updated||b.created_at);
+    if (state.sortBy === 'threats-desc') return ((b.pii_detections||0)+(b.jailbreak_attempts||0)+(b.toxicity_detections||0)+(b.secrets_detections||0)) - ((a.pii_detections||0)+(a.jailbreak_attempts||0)+(a.toxicity_detections||0)+(a.secrets_detections||0));
+    if (state.sortBy === 'prompts-desc') return (b.total_prompts||0) - (a.total_prompts||0);
+    return 0;
+  });
+  return f;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  HTML Renderers
+// ─────────────────────────────────────────────────────────────
+function renderHeader() {
+  return `
+  <div class="page-header">
+    <div class="logo-box">
+      <img src="/static/loco.png" alt="iNextLabs" />
+    </div>
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="dashboard-title">inFlow Shield</div>
+        <div class="dashboard-subtitle">Real-time monitoring of AI security guardrails and threat detection</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStats(stats) {
+  const cards = [
+    { icon:'💬', label:'Total Threads',     value: stats.totalThreads,     color:'#3b82f6' },
+    { icon:'📝', label:'Total Prompts',     value: stats.totalPrompts,     color:'#10b981' },
+    { icon:'🚫', label:'Blocked Prompts',   value: stats.totalBlocked,     color:'#ef4444' },
+    { icon:'🔒', label:'PII Detections',    value: stats.totalPII,         color:'#f59e0b' },
+    { icon:'🔑', label:'Secrets Detected',  value: stats.totalSecrets,     color:'#8b5cf6' },
+    { icon:'⚠️', label:'Jailbreak Attempts',value: stats.totalJailbreaks,  color:'#dc2626' },
+    { icon:'☣️', label:'Toxicity Detected', value: stats.totalToxicity,    color:'#991b1b' },
+  ];
+  return `<div class="stats-grid">${cards.map(c => `
+    <div class="stat-card" style="border-left-color:${c.color}">
+      <div class="stat-icon">${c.icon}</div>
+      <div class="stat-content">
+        <div class="stat-value" data-count-to="${c.value}">0</div>
+        <div class="stat-label">${c.label}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderControls(filtered) {
+  const searchPlaceholders = {
+    botId:    'Search by Bot ID...',
+    threadId: 'Search by Thread ID...',
+    prompt:   'Search prompt text...',
+  };
+  return `
+  <div class="controls-section">
+    <div class="search-box">
+      <div class="search-icon">🔍</div>
+      <input class="search-input" id="searchInput" type="text"
+        placeholder="${searchPlaceholders[state.searchMode]}"
+        value="${escHtml(state.searchTerm)}"
+        oninput="onSearch(this.value)"
+        style="padding-right:1rem"
+      />
+    </div>
+    <div class="search-mode-group">
+      <span style="font-size:0.8125rem;color:#a8a29e;font-weight:600;white-space:nowrap">Search by:</span>
+      ${[['botId','🤖 Bot ID'],['threadId','🧵 Thread ID'],['prompt','💬 Prompt']].map(([mode,label]) => `
+        <button class="search-mode-btn ${state.searchMode===mode?'active':''}" onclick="setSearchMode('${mode}')">${label}</button>
+      `).join('')}
+    </div>
+    <div class="filter-group">
+      ${['all','threats','pii','secrets','jailbreak','toxicity','clean'].map(f => `
+        <button class="filter-btn ${state.filterType===f?'active':''}" onclick="setFilter('${f}')">
+          ${{all:'All',threats:'⚠️ Threats',pii:'🔒 PII',secrets:'🔑 Secrets',jailbreak:'🚨 Jailbreak',toxicity:'☣️ Toxicity',clean:'✅ Clean'}[f]}
+        </button>`).join('')}
+    </div>
+    <div class="controls-right">
+      <div class="select-wrapper">
+        <select class="sort-select" onchange="setSort(this.value)">
+          <option value="date-desc"     ${state.sortBy==='date-desc'?'selected':''}>Newest First</option>
+          <option value="date-asc"      ${state.sortBy==='date-asc'?'selected':''}>Oldest First</option>
+          <option value="threats-desc"  ${state.sortBy==='threats-desc'?'selected':''}>Most Threats</option>
+          <option value="prompts-desc"  ${state.sortBy==='prompts-desc'?'selected':''}>Most Prompts</option>
+        </select>
+        <span class="select-arrow">▼</span>
+      </div>
+      <div class="export-wrapper">
+        <button class="icon-btn" onclick="toggleExportMenu()">📥 Export ${state.showExportMenu?'▲':'▼'}</button>
+        ${state.showExportMenu ? renderExportMenu() : ''}
+      </div>
+      <button class="icon-btn" onclick="refresh()">🔄 Refresh</button>
+      ${state.threads.length > 0 ? `<button class="icon-btn danger" onclick="onClearAll()">🗑️ Clear All</button>` : ''}
+    </div>
+  </div>
+  <div class="results-summary">
+    Showing ${filtered.length} thread${filtered.length!==1?'s':''}${state.searchTerm?` matching "${escHtml(state.searchTerm)}" in ${state.searchMode}` : ''}${state.filterType!=='all'?` · filter: ${state.filterType}`:''}
+  </div>`;
+}
+
+function renderExportMenu() {
+  const threatSessions = state.threads.filter(s => s.pii_detections>0 || s.jailbreak_attempts>0 || s.toxicity_detections>0 || s.secrets_detections>0 || s.blocked_prompts>0);
+  return `
+  <div class="export-menu">
+    <div class="export-menu-header">📊 Export Options</div>
+    <div class="export-option" onclick="exportSummaryCSV()">
+      <span>📄</span><span>Summary (CSV)</span><span class="export-option-count">${state.threads.length} sessions</span>
+    </div>
+    <div class="export-option" onclick="exportFullJSON()">
+      <span>📦</span><span>Full Data + Prompts (JSON)</span><span class="export-option-count">All details</span>
+    </div>
+    <div class="export-option" onclick="exportThreatsCSV()">
+      <span>⚠️</span><span>All Threats (CSV)</span><span class="export-option-count">${threatSessions.length} sessions</span>
+    </div>
+  </div>`;
+}
+
+function renderThreadsTable(threads) {
+  if (threads.length === 0) return `
+    <div class="empty-state">
+      <div class="empty-state-icon">🔭</div>
+      <div class="empty-state-title">No threads found</div>
+      <div>Start conversations to see security analytics here</div>
+    </div>`;
+  return `<div class="threads-container">${threads.map(t => renderThreadRow(t)).join('')}</div>`;
+}
+
+function renderThreadRow(t) {
+  const threats = (t.pii_detections||0)+(t.jailbreak_attempts||0)+(t.toxicity_detections||0)+(t.secrets_detections||0);
+  return `
+  <div class="thread-card">
+    <div class="thread-header ${threats>0?'has-threats':'clean'}" onclick="openThread('${escHtml(t.thread_id)}')">
+      <div class="thread-expand-icon">▶</div>
+      <div class="thread-info">
+        <div class="thread-id-row">
+          <span class="thread-id-label">Thread:</span>
+          <span class="thread-id">${escHtml(t.thread_id)}</span>
+        </div>
+        <div class="thread-meta">
+          <span>👤 ${escHtml(t.user_id||'N/A')}</span>
+          <span>💬 ${t.conversation_count||0} conversation${t.conversation_count!==1?'s':''}</span>
+          <span>📝 ${t.total_prompts||0} prompts</span>
+          <span>🕐 ${getRelativeTime(t.last_updated||t.created_at)}</span>
+        </div>
+      </div>
+      <div class="thread-threats">
+        ${threats > 0 ? `
+          <div class="threat-summary">
+            <span class="threat-count">⚠️ ${threats} threats</span>
+            <div class="threat-badges-compact">
+              ${t.pii_detections>0       ? `<span class="badge-pii">${t.pii_detections} PII</span>` : ''}
+              ${t.secrets_detections>0   ? `<span class="badge-secrets">${t.secrets_detections} SEC</span>` : ''}
+              ${t.jailbreak_attempts>0   ? `<span class="badge-jailbreak">${t.jailbreak_attempts} JB</span>` : ''}
+              ${t.toxicity_detections>0  ? `<span class="badge-toxicity">${t.toxicity_detections} TOX</span>` : ''}
+            </div>
+          </div>` : `<span class="clean-badge">✅ Clean</span>`}
+      </div>
+      <button class="thread-delete-btn" onclick="event.stopPropagation();onDeleteThread('${escHtml(t.bot_id)}','${escHtml(t.thread_id)}')" title="Delete thread">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function renderPagination(filtered) {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  if (totalPages <= 1) return '';
+  const start = (state.currentPage-1)*ITEMS_PER_PAGE+1;
+  const end   = Math.min(state.currentPage*ITEMS_PER_PAGE, total);
+
+  let pages = [];
+  const max = 7, sp = Math.max(1, state.currentPage-3), ep = Math.min(totalPages, sp+max-1);
+  if (sp>1) { pages.push(1); if(sp>2) pages.push('...'); }
+  for (let i=sp; i<=ep; i++) pages.push(i);
+  if (ep<totalPages) { if(ep<totalPages-1) pages.push('...'); pages.push(totalPages); }
+
+  return `
+  <div class="pagination-container">
+    <div class="page-info">Showing ${start}–${end} of ${total} results</div>
+    <div class="pagination-controls">
+      <button class="page-btn" onclick="setPage(${state.currentPage-1})" ${state.currentPage===1?'disabled':''}>← Prev</button>
+      ${pages.map(p => p==='...' ? `<span style="padding:0 4px;color:#a8a29e">…</span>` :
+        `<button class="page-btn ${state.currentPage===p?'active':''}" onclick="setPage(${p})">${p}</button>`).join('')}
+      <button class="page-btn" onclick="setPage(${state.currentPage+1})" ${state.currentPage===totalPages?'disabled':''}>Next →</button>
+    </div>
+    <div class="page-info" style="color:#a8a29e;font-style:italic">Page ${state.currentPage} of ${totalPages}</div>
+  </div>`;
+}
+
+function renderThreadDetail(thread) {
+  const threats = (thread.pii_detections||0)+(thread.jailbreak_attempts||0)+(thread.toxicity_detections||0)+(thread.secrets_detections||0);
+  return `
+  <div class="details-container">
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+      <button class="back-btn" onclick="goBack()">← Back to Threads</button>
+      <button class="btn-delete-session" onclick="onDeleteThread('${escHtml(thread.bot_id)}','${escHtml(thread.thread_id)}',true)">🗑️ Delete Thread</button>
+    </div>
+    <div class="bot-info-grid">
+      <div><div class="info-label">Thread ID</div><div class="info-value" style="font-family:monospace;font-size:0.875rem">${escHtml(thread.thread_id)}</div></div>
+      <div><div class="info-label">User</div><div class="info-value">${escHtml(thread.user_id||'N/A')}</div></div>
+      <div><div class="info-label">Conversations</div><div class="info-value">${thread.conversation_count||0}</div></div>
+      <div><div class="info-label">Total Prompts</div><div class="info-value">${thread.total_prompts||0}</div></div>
+      <div><div class="info-label">Threats</div><div class="info-value" style="color:${threats>0?'#dc2626':'#10b981'}">${threats}</div></div>
+      <div><div class="info-label">Created</div><div class="info-value">${formatDate(thread.created_at)}</div></div>
+    </div>
+    <div>
+      <div class="section-title">💬 Conversations (${thread.conversations?.length||0})</div>
+      ${thread.conversations?.length > 0
+        ? `<div class="conversations-list">${thread.conversations.map((c,i) => renderConversationRow(c,i)).join('')}</div>`
+        : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-title">No conversations yet</div></div>`}
+    </div>
+  </div>`;
+}
+
+function renderConversationRow(conv, idx) {
+  const threats = (conv.pii_detections||0)+(conv.jailbreak_attempts||0)+(conv.toxicity_detections||0)+(conv.blocked_prompts||0);
+  const cid = escHtml(conv.conversation_id);
+  return `
+  <div class="conversation-card" id="conv-${cid}">
+    <div class="conversation-header" onclick="toggleConversation('${cid}')">
+      <div class="conversation-expand-icon" id="conv-icon-${cid}">▶</div>
+      <div class="conversation-info">
+        <div><span class="conversation-label">Conversation: </span><span class="conversation-id-text">${escHtml(conv.conversation_id)}</span></div>
+        <div class="conversation-meta">
+          <span>📝 <strong>${conv.total_prompts||0}</strong> message${(conv.total_prompts||0)!==1?'s':''}</span>
+          <span>🕐 ${formatDate(conv.started_at)}${conv.ended_at?' → '+formatDate(conv.ended_at):''}</span>
+        </div>
+      </div>
+      <div class="conversation-threats">
+        ${threats>0 ? `
+          <div class="threat-badges-compact">
+            ${conv.pii_detections>0      ? `<span class="badge-pii">PII <strong>${conv.pii_detections}</strong></span>` : ''}
+            ${conv.jailbreak_attempts>0  ? `<span class="badge-jailbreak">JB <strong>${conv.jailbreak_attempts}</strong></span>` : ''}
+            ${conv.toxicity_detections>0 ? `<span class="badge-toxicity">TOX <strong>${conv.toxicity_detections}</strong></span>` : ''}
+            ${conv.blocked_prompts>0     ? `<span class="badge-blocked">BLK <strong>${conv.blocked_prompts}</strong></span>` : ''}
+          </div>` : `<span class="clean-badge-small">✅</span>`}
+      </div>
+    </div>
+    <div class="events-list" id="events-${cid}" style="display:none">
+      ${conv.security_events?.length > 0
+        ? conv.security_events.map((ev, i) => renderEventCard(ev, i+1)).join('')
+        : `<div style="text-align:center;padding:2rem;color:#a8a29e"><div style="font-size:2rem;margin-bottom:0.5rem">📭</div>No security events</div>`}
+    </div>
+  </div>`;
+}
+
+function renderEventCard(ev, idx) {
+  const isBlocked = ev.blocked;
+  const hasPII    = ev.detections?.pii?.detected;
+  let cardClass = 'safe';
+  if (hasPII)      cardClass = 'pii';
+  if (isBlocked)   cardClass = 'blocked';
+
+  const hasDetections = ev.detections && Object.values(ev.detections).some(r => r?.detected);
+  const threatBadges = hasDetections ? Object.entries(ev.detections).filter(([,r])=>r?.detected).map(([name])=>{
+    const threatClass = name.toLowerCase().replace(/[^a-z]/g, '');
+    return `<span class="threat-tag ${threatClass}">${escHtml(name)}</span>`;
+  }).join('') : '';
+
+  return `
+  <div class="event-card-compact ${cardClass}">
+    <div class="event-row-main">
+      <span class="event-num">#${idx}</span>
+      <span class="event-status-sm ${isBlocked?'blocked':'safe'}">${isBlocked?'🚫 BLOCKED':'✅ SAFE'}</span>
+      ${ev.risk_level ? `<span class="risk-tag risk-${(ev.risk_level||'').toLowerCase()}">${escHtml(ev.risk_level)}</span>` : ''}
+      <span class="event-time">🕐 ${formatDate(ev.timestamp)}</span>
+      ${ev.metrics?.scan_time ? `<span class="event-perf">⏱️ ${ev.metrics.scan_time.toFixed(2)}s</span>` : ''}
+    </div>
+    <div class="event-prompt-row">
+      <span class="prompt-label">📝</span>
+      <span class="prompt-text-compact">${escHtml(ev.prompt||'N/A')}</span>
+    </div>
+    ${threatBadges ? `<div class="event-threats-row">${threatBadges}</div>` : ''}
+    ${isBlocked && ev.block_reason ? `<div class="event-block-row">🛡️ ${escHtml(ev.block_reason)}</div>` : ''}
+  </div>`;
+}
+
+function renderAnalytics(stats) {
+  return `
+  <div class="charts-grid">
+    <div class="chart-container">
+      <div class="chart-title">🎯 Threat Distribution</div>
+      <div class="chart-canvas-wrapper"><canvas id="pieChart"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">⚠️ Threat Types Breakdown</div>
+      <div class="chart-canvas-wrapper"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">📅 Activity Timeline</div>
+      <div class="chart-canvas-wrapper"><canvas id="timelineChart"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">🔥 Top Threatening Threads</div>
+      <div class="chart-canvas-wrapper"><canvas id="topChart"></canvas></div>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Charts
+// ─────────────────────────────────────────────────────────────
+function initCharts(stats) {
+  // Destroy old charts
+  Object.values(state.charts).forEach(c => c.destroy());
+  state.charts = {};
+
+  // Pie chart — threat distribution
+  const pieData = [
+    { label:'PII',       value: stats.totalPII,       color:'#f59e0b' },
+    { label:'Secrets',   value: stats.totalSecrets,   color:'#8b5cf6' },
+    { label:'Jailbreak', value: stats.totalJailbreaks,color:'#ef4444' },
+    { label:'Toxicity',  value: stats.totalToxicity,  color:'#dc2626' },
+  ].filter(d => d.value > 0);
+
+  const cleanCount = state.threads.filter(t => !t.pii_detections && !t.jailbreak_attempts && !t.toxicity_detections && !t.secrets_detections).length;
+  if (cleanCount > 0) pieData.push({ label:'Clean', value: cleanCount, color:'#10b981' });
+
+  const pieCtx = document.getElementById('pieChart');
+  if (pieCtx && pieData.length > 0) {
+    state.charts.pie = new Chart(pieCtx, {
+      type: 'pie',
+      data: { labels: pieData.map(d=>d.label), datasets: [{ data: pieData.map(d=>d.value), backgroundColor: pieData.map(d=>d.color) }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position:'bottom' } } }
+    });
+  }
+
+  // Bar chart — threat types
+  const barData = [
+    { label:'PII',       value: stats.totalPII,       color:'#f59e0b' },
+    { label:'Secrets',   value: stats.totalSecrets,   color:'#8b5cf6' },
+    { label:'Jailbreak', value: stats.totalJailbreaks,color:'#ef4444' },
+    { label:'Toxicity',  value: stats.totalToxicity,  color:'#dc2626' },
+  ].filter(d => d.value > 0);
+
+  const barCtx = document.getElementById('barChart');
+  if (barCtx && barData.length > 0) {
+    state.charts.bar = new Chart(barCtx, {
+      type: 'bar',
+      data: { labels: barData.map(d=>d.label), datasets: [{ label:'Detections', data: barData.map(d=>d.value), backgroundColor: barData.map(d=>d.color) }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  // Timeline chart
+  const grouped = {};
+  state.threads.forEach(t => {
+    t.conversations?.forEach(c => {
+      const date = new Date(c.started_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      if (!grouped[date]) grouped[date] = { date, sessions:0, threats:0 };
+      grouped[date].sessions++;
+      grouped[date].threats += (c.pii_detections||0)+(c.jailbreak_attempts||0)+(c.toxicity_detections||0)+(c.blocked_prompts||0);
+    });
+  });
+  const timelineData = Object.values(grouped).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-14);
+  const tlCtx = document.getElementById('timelineChart');
+  if (tlCtx && timelineData.length > 0) {
+    state.charts.timeline = new Chart(tlCtx, {
+      type: 'line',
+      data: {
+        labels: timelineData.map(d=>d.date),
+        datasets: [
+          { label:'Sessions', data: timelineData.map(d=>d.sessions), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.1)', fill:true, tension:0.4 },
+          { label:'Threats',  data: timelineData.map(d=>d.threats),  borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.1)',  fill:true, tension:0.4 },
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  // Top threatening threads — horizontal bar
+  const topData = [...state.threads]
+    .map(t => ({ id:(t.thread_id||'unknown').substring(0,20)+'…', threats:(t.pii_detections||0)+(t.jailbreak_attempts||0)+(t.toxicity_detections||0)+(t.secrets_detections||0) }))
+    .filter(t=>t.threats>0).sort((a,b)=>b.threats-a.threats).slice(0,10);
+  const topCtx = document.getElementById('topChart');
+  if (topCtx && topData.length > 0) {
+    state.charts.top = new Chart(topCtx, {
+      type: 'bar',
+      data: { labels: topData.map(d=>d.id), datasets: [{ label:'Total Threats', data: topData.map(d=>d.threats), backgroundColor:'#ef4444' }] },
+      options: { indexAxis:'y', responsive: true, maintainAspectRatio: false, plugins:{ legend:{display:false} }, scales: { x:{ beginAtZero:true } } }
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Main Render
+// ─────────────────────────────────────────────────────────────
+function render() {
+  const stats    = getStats();
+  const filtered = getFilteredThreads();
+  const start    = (state.currentPage-1)*ITEMS_PER_PAGE;
+  const paginated= filtered.slice(start, start+ITEMS_PER_PAGE);
+  const app      = document.getElementById('app');
+
+  let html = renderHeader();
+  html += `<div class="view-toggle">
+    <a href="/" class="nav-toggle-btn">💬 Chat</a>
+    <button class="view-btn ${state.view==='overview'?'active':''}" onclick="setView('overview')">📊 Threads Overview</button>
+    <button class="view-btn ${state.view==='analytics'?'active':''}" onclick="setView('analytics')">📈 Analytics</button>
+  </div>`;
+  html += renderStats(stats);
+
+  html += `<div class="view-content">`;
+  if (state.view === 'details' && state.selectedThread) {
+    html += renderThreadDetail(state.selectedThread);
+  } else if (state.view === 'overview') {
+    html += renderControls(filtered);
+    html += renderThreadsTable(paginated);
+    html += renderPagination(filtered);
+  } else {
+    html += renderAnalytics(stats);
+  }
+  html += `</div>`;
+
+  app.innerHTML = html;
+
+  // Animate stat counters
+  requestAnimationFrame(() => animateCounters());
+
+  // Init charts after DOM is ready
+  if (state.view === 'analytics') {
+    requestAnimationFrame(() => initCharts(stats));
+  }
+}
+
+// Animate stat counters from 0 to target value
+function animateCounters() {
+  const counters = document.querySelectorAll('[data-count-to]');
+  counters.forEach(el => {
+    const target = parseInt(el.dataset.countTo, 10);
+    if (target === 0) { el.textContent = '0'; return; }
+    const duration = 800;
+    const startTime = performance.now();
+    const easeOutQuad = t => t * (2 - t);
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutQuad(progress);
+      const current = Math.floor(easedProgress * target);
+      el.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = target.toLocaleString();
+    }
+    requestAnimationFrame(update);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Event Handlers
+// ─────────────────────────────────────────────────────────────
+function setView(v) { state.view = v; state.currentPage = 1; render(); }
+function goBack()   { state.view = 'overview'; state.selectedThread = null; render(); }
+function onSearch(v){ state.searchTerm = v; state.currentPage = 1; render(); }
+function setFilter(f){ state.filterType = f; state.searchTerm = ''; state.currentPage = 1; render(); }
+function setSort(v) { state.sortBy = v; state.currentPage = 1; render(); }
+function setPage(p) { state.currentPage = p; render(); }
+function setSearchMode(mode) {
+  state.searchMode = mode;
+  state.searchTerm = '';
+  state.currentPage = 1;
+  render();
+}
+function toggleExportMenu() { state.showExportMenu = !state.showExportMenu; render(); }
+document.addEventListener('click', e => {
+  if (state.showExportMenu && !e.target.closest('.export-wrapper')) { state.showExportMenu = false; render(); }
+});
+
+function openThread(threadId) {
+  const t = state.threads.find(t => t.thread_id === threadId);
+  if (!t) return;
+  state.selectedThread = t;
+  state.view = 'details';
+  render();
+}
+
+function toggleConversation(cid) {
+  const allEvents = document.querySelectorAll('[id^="events-"]');
+  const allIcons = document.querySelectorAll('[id^="conv-icon-"]');
+  const targetEvents = document.getElementById(`events-${cid}`);
+  const targetIcon = document.getElementById(`conv-icon-${cid}`);
+  if (!targetEvents) return;
+  
+  const isOpening = targetEvents.style.display === 'none';
+  
+  // Close all conversations with animation
+  allEvents.forEach(el => {
+    if (el.id !== `events-${cid}`) {
+      el.style.maxHeight = '0';
+      el.style.opacity = '0';
+      setTimeout(() => { el.style.display = 'none'; }, 200);
+    }
+  });
+  allIcons.forEach(el => {
+    if (el.id !== `conv-icon-${cid}`) el.textContent = '▶';
+  });
+  
+  // Toggle target conversation
+  if (isOpening) {
+    targetEvents.style.display = 'flex';
+    targetEvents.style.flexDirection = 'column';
+    targetEvents.style.maxHeight = '0';
+    targetEvents.style.opacity = '0';
+    requestAnimationFrame(() => {
+      targetEvents.style.transition = 'max-height 0.3s ease-out, opacity 0.2s ease-out';
+      targetEvents.style.maxHeight = '2000px';
+      targetEvents.style.opacity = '1';
+    });
+    if (targetIcon) targetIcon.textContent = '▼';
+  } else {
+    targetEvents.style.maxHeight = '0';
+    targetEvents.style.opacity = '0';
+    setTimeout(() => { targetEvents.style.display = 'none'; }, 200);
+    if (targetIcon) targetIcon.textContent = '▶';
+  }
+}
+
+async function onDeleteThread(botId, threadId, andGoBack=false) {
+  if (!confirm(`Delete thread ${(threadId||'').substring(0,24)}...?`)) return;
+  await deleteThread(botId);
+  if (andGoBack) goBack();
+}
+
+async function onClearAll() {
+  if (!confirm('⚠️ Delete ALL threads? This cannot be undone.')) return;
+  await clearAllThreads();
+}
+
+async function refresh() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="loading-screen"><div class="loading-spinner">⏳</div><div style="font-size:18px;color:#6b7280">Refreshing...</div></div>`;
+  await fetchAllThreads();
+  state.currentPage = 1;
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Export Helpers
+// ─────────────────────────────────────────────────────────────
+function downloadFile(content, filename, type) {
+  const mime = type === 'csv' ? 'text/csv;charset=utf-8;' : 'application/json';
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function toCSV(rows) {
+  if (!rows.length) return '';
+  const headers = Object.keys(rows[0]).join(',');
+  const body = rows.map(r => Object.values(r).map(v=>`"${v}"`).join(',')).join('\n');
+  return `${headers}\n${body}`;
+}
+function exportSummaryCSV() {
+  const rows = state.threads.map(s => ({
+    'Bot ID': s.bot_id, 'Created': new Date(s.created_at).toLocaleString(),
+    'Total Prompts': s.total_prompts, 'Blocked': s.blocked_prompts,
+    'PII': s.pii_detections, 'Secrets': s.secrets_detections||0,
+    'Jailbreaks': s.jailbreak_attempts, 'Toxicity': s.toxicity_detections
+  }));
+  downloadFile(toCSV(rows), `security-summary-${new Date().toISOString().split('T')[0]}.csv`, 'csv');
+  state.showExportMenu = false; render();
+}
+function exportFullJSON() {
+  downloadFile(JSON.stringify(state.threads, null, 2), `security-full-${new Date().toISOString().split('T')[0]}.json`, 'json');
+  state.showExportMenu = false; render();
+}
+function exportThreatsCSV() {
+  const rows = state.threads.filter(s=>s.pii_detections>0||s.jailbreak_attempts>0||s.toxicity_detections>0||s.secrets_detections>0||s.blocked_prompts>0)
+    .map(s => ({
+      'Bot ID': s.bot_id, 'Total Prompts': s.total_prompts, 'Blocked': s.blocked_prompts,
+      'PII': s.pii_detections, 'Secrets': s.secrets_detections||0,
+      'Jailbreaks': s.jailbreak_attempts, 'Toxicity': s.toxicity_detections,
+      'Total Threats': (s.pii_detections||0)+(s.secrets_detections||0)+(s.jailbreak_attempts||0)+(s.toxicity_detections||0)
+    }));
+  downloadFile(toCSV(rows), `all-threats-${new Date().toISOString().split('T')[0]}.csv`, 'csv');
+  state.showExportMenu = false; render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Boot
+// ─────────────────────────────────────────────────────────────
+(async () => {
+  await fetchAllThreads();
+  render();
+})();
+</script>
+</body>
+</html>

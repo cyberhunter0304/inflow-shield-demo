@@ -1,0 +1,12 @@
+services:
+  llm-guard:
+    build: .
+    container_name: llm-guard
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./security_logs:/app/security_logs   # persist scan results
+      - ./frontend:/app/frontend             # serve frontend files
+    restart: unless-stopped
