@@ -13,11 +13,8 @@ pymongo==4.6.1
 pydantic==2.10.6
 pydantic-settings==2.7.1
 
-# Security & Jailbreak Detection
-llm-guard==0.3.16
-
-# Pin huggingface_hub for transformers/accelerate compatibility
-huggingface-hub==0.31.0
+# Security & Jailbreak Detection (inFlow Shield — replaces llm-guard)
+inflow-shield-lib @ https://github.com/cyberhunter0304/inflow-shield-lib/archive/refs/heads/main.zip
 
 # Environment Variables
 python-dotenv==1.0.1
@@ -30,6 +27,3 @@ typing-extensions==4.12.2
 
 # Optional: Performance
 orjson==3.10.14
-
-# Note: llm-guard and its heavy deps (torch, spacy, transformers, presidio)
-# are installed as separate Dockerfile layers — do NOT add them here.

@@ -7,9 +7,7 @@ import logging
 import threading
 import re
 from typing import Tuple, List, Dict
-from llm_guard.vault import Vault
-from llm_guard.input_scanners import Anonymize, Secrets
-from llm_guard.input_scanners.anonymize_helpers import BERT_LARGE_NER_CONF
+from inflow_shield_lib import Vault, Secrets
 from config import SCANNER_CONFIG
 
 logger = logging.getLogger(__name__)
@@ -77,20 +75,9 @@ def _initialize_all_scanners():
                 logger.warning("Presidio not available, will use BERT-only mode")
                 _PRESIDIO_ANALYZER = None
             
-            # Create Anonymize scanner once (uses BERT-NER)
-            logger.info("Loading Anonymize scanner (BERT-NER for entity recognition)...")
-            _ANONYMIZE_SCANNER = Anonymize(
-                vault=_VAULT,
-                preamble="The following text contains sensitive information.",
-                allowed_names=[],
-                hidden_names=[],
-                entity_types=None,
-                use_faker=False,
-                recognizer_conf=BERT_LARGE_NER_CONF,
-                threshold=SCANNER_CONFIG.get("pii_threshold", 0.5),
-                language="en"
-            )
-            logger.info("✓ Anonymize scanner loaded and cached")
+            # No separate Anonymize scanner needed — anonymization is done
+            # directly via the cached Presidio Anonymizer (_PRESIDIO_ANONYMIZER).
+            logger.info("✓ Using Presidio Anonymizer for redaction (no separate BERT-NER scanner needed)")
             
             # Create Secrets scanner once
             logger.info("Loading Secrets scanner...")
@@ -103,8 +90,7 @@ def _initialize_all_scanners():
             logger.info("✅ ALL PII DETECTION SCANNERS INITIALIZED AND CACHED")
             logger.info("   ├─ Presidio Analyzer (accurate PII detection)")
             logger.info("   ├─ Presidio Recognizer Cache (pre-warmed for 'en')")
-            logger.info("   ├─ BERT-NER (entity recognition)")
-            logger.info("   ├─ Anonymize Scanner (redaction)")
+            logger.info("   ├─ Presidio Anonymizer (redaction)")
             logger.info("   └─ Secrets Scanner (API keys, passwords)")
             logger.info("   ⏱️  Ready for requests! (No startup delay)")
             logger.info("=" * 70)
@@ -240,10 +226,17 @@ class ThreadSafePIIDetector:
             logger.debug(f"Extracted PII: {pii_values_by_type}")
             
             # ================================================================
-            # STEP 2: Run anonymization using CACHED Anonymize scanner
+            # STEP 2: Anonymize using cached Presidio Anonymizer directly
             # ================================================================
             try:
-                sanitized_text, is_valid_pii, risk_score_pii = _ANONYMIZE_SCANNER.scan(text)
+                if _PRESIDIO_ANALYZER and _PRESIDIO_ANONYMIZER:
+                    analyze_results = _PRESIDIO_ANALYZER.analyze(text=text, language="en")
+                    anonymized_result = _PRESIDIO_ANONYMIZER.anonymize(
+                        text=text, analyzer_results=analyze_results
+                    )
+                    sanitized_text = anonymized_result.text
+                else:
+                    sanitized_text = text
                 logger.debug(f"Anonymized text: '{sanitized_text}'")
 
                 # Extract tokens from anonymized text
@@ -298,7 +291,7 @@ class ThreadSafePIIDetector:
                 logger.debug(f"Final entities: {entities}")
                     
             except Exception as e:
-                logger.error(f"Anonymize Scanner error: {str(e)}")
+                logger.error(f"Presidio anonymization error: {str(e)}")
                 import traceback
                 logger.error(traceback.format_exc())
                 sanitized_text = text

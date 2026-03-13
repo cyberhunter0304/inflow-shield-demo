@@ -12,7 +12,8 @@ import hashlib
 import re
 from typing import Dict, Any, Optional
 from functools import lru_cache
-from llm_guard.input_scanners import PromptInjection, Toxicity
+from inflow_shield_lib.prompt_injection import PromptInjection
+from inflow_shield_lib.toxicity import Toxicity
 from pii_detector import ThreadSafePIIDetector
 from models import SecurityScanResult
 from config import SCANNER_CONFIG

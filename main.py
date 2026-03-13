@@ -52,6 +52,7 @@ from routes.security_logs import router as security_logs_router
 from routes.monitor       import router as monitor_router
 from routes.scan          import router as scan_router
 from routes.admin         import router as admin_router
+from routes.shield_scan   import router as shield_scan_router
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -87,6 +88,7 @@ app.include_router(security_logs_router)
 app.include_router(monitor_router)
 app.include_router(scan_router)
 app.include_router(admin_router)
+app.include_router(shield_scan_router)   # → POST /api/shield/scan
 
 # Legacy aliases (keep old URLs working while frontend migrates)
 from routes.security_logs import get_all_security_logs, get_bot_security_log
